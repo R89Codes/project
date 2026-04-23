@@ -1,0 +1,11 @@
+{
+  "mode": "desktop",
+  "consoleIssues": [],
+  "pageErrors": [],
+  "externalRequests": [],
+  "counts": {
+    "greedyVertices": 6,
+    "backVertices": 6,
+    "chartHasContent": 1
+  }
+}

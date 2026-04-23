@@ -1,0 +1,3814 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>3-Coloring Playground</title>
+    <style>
+      :root {
+        --bg: #0f1419;
+        --bg-elev: #161c23;
+        --bg-panel: #1d242c;
+        --border: #2a323c;
+        --text: #e6edf3;
+        --text-dim: #8b949e;
+        --accent: #58a6ff;
+        --accent-2: #f0883e;
+        --accent-yellow: #ffd166;
+        --success: #3fb950;
+        --danger: #f85149;
+        --warn: #d29922;
+        --color-1: #e5484d;
+        --color-2: #30a46c;
+        --color-3: #5b8def;
+        --color-4: #f0b72f;
+        --color-unset: #3a4350;
+        --radius: 6px;
+        --mono: "SF Mono", "JetBrains Mono", Consolas, ui-monospace, monospace;
+        --sans: -apple-system, "Inter", Segoe UI, Roboto, sans-serif;
+        --tx-speed: 200ms;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        font-family: var(--sans);
+        background: radial-gradient(circle at top right, #1a2531, var(--bg) 40%);
+        color: var(--text);
+      }
+
+      .topbar {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 1rem;
+        padding: 0.75rem 1rem;
+        border-bottom: 1px solid var(--border);
+        background: var(--bg-elev);
+        position: sticky;
+        top: 0;
+        z-index: 20;
+      }
+
+      .title {
+        font-size: 1.05rem;
+        font-weight: 700;
+        margin-right: auto;
+      }
+
+      .topbar-group {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.9rem;
+        color: var(--text-dim);
+      }
+
+      button,
+      select,
+      input,
+      textarea {
+        font: inherit;
+        color: var(--text);
+      }
+
+      button,
+      select,
+      input[type="text"],
+      input[type="number"],
+      textarea {
+        border: 1px solid var(--border);
+        background: #121920;
+        border-radius: var(--radius);
+        padding: 0.4rem 0.55rem;
+      }
+
+      button {
+        cursor: pointer;
+        background: #1a2430;
+        transition: transform 120ms ease, border-color 120ms ease;
+      }
+
+      button:hover:enabled {
+        transform: translateY(-1px);
+        border-color: var(--accent);
+      }
+
+      button:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+
+      button:focus-visible,
+      select:focus-visible,
+      input:focus-visible,
+      textarea:focus-visible,
+      [role="tab"]:focus-visible {
+        outline: 2px solid var(--accent);
+        outline-offset: 2px;
+      }
+
+      .status {
+        padding: 0.2rem 0.55rem;
+        border-radius: 999px;
+        border: 1px solid var(--border);
+        font-family: var(--mono);
+        background: #121920;
+        color: var(--text-dim);
+        transition: color var(--tx-speed) ease-out, border-color var(--tx-speed) ease-out, background var(--tx-speed) ease-out;
+      }
+
+      .status.status-running {
+        color: var(--accent);
+        border-color: var(--accent);
+        background: rgba(88, 166, 255, 0.14);
+      }
+
+      .status.status-done {
+        color: var(--success);
+        border-color: var(--success);
+        background: rgba(63, 185, 80, 0.14);
+      }
+
+      .status.status-error {
+        color: var(--danger);
+        border-color: var(--danger);
+        background: rgba(248, 81, 73, 0.14);
+      }
+
+      .status.status-building {
+        color: var(--accent-2);
+        border-color: var(--accent-2);
+        background: rgba(240, 136, 62, 0.12);
+      }
+
+      .tabs {
+        display: flex;
+        gap: 0.4rem;
+        padding: 0.5rem 1rem;
+        border-bottom: 1px solid var(--border);
+        background: #131a22;
+      }
+
+      .tab-btn {
+        border: 1px solid var(--border);
+        background: #111922;
+        color: var(--text-dim);
+        padding: 0.5rem 0.8rem;
+      }
+
+      .tab-btn.active {
+        color: var(--text);
+        border-color: var(--accent);
+        background: #132334;
+      }
+
+      .intro-section {
+        max-width: 1280px;
+        margin: 0 auto;
+        padding: 0.85rem 1rem 0.3rem;
+      }
+
+      .intro-card {
+        background: linear-gradient(180deg, rgba(255, 255, 255, 0.055), rgba(255, 255, 255, 0.028));
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        box-shadow: 0 10px 24px rgba(0, 0, 0, 0.22);
+        overflow: hidden;
+      }
+
+      .intro-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.8rem;
+        padding: 0.85rem 1rem;
+        background: rgba(255, 255, 255, 0.03);
+        border-bottom: 1px solid var(--border);
+        cursor: pointer;
+      }
+
+      .intro-header h2 {
+        margin: 0;
+        font-size: 1rem;
+      }
+
+      .intro-toggle {
+        width: auto;
+        border-radius: 10px;
+        padding: 0.3rem 0.75rem;
+        border-color: rgba(88, 166, 255, 0.45);
+        background: rgba(88, 166, 255, 0.13);
+        color: var(--accent);
+        font-size: 0.76rem;
+        font-weight: 700;
+        letter-spacing: 0.02em;
+      }
+
+      .intro-body {
+        padding: 1.05rem 1.1rem 1.25rem;
+        max-height: 9000px;
+        overflow: hidden;
+        transition: max-height 280ms ease, padding 280ms ease;
+      }
+
+      .intro-body.collapsed {
+        max-height: 0 !important;
+        padding-top: 0;
+        padding-bottom: 0;
+      }
+
+      .roadmap {
+        border: 1px solid rgba(88, 166, 255, 0.28);
+        background: linear-gradient(145deg, rgba(88, 166, 255, 0.12), rgba(240, 136, 62, 0.07));
+        border-radius: 12px;
+        padding: 0.8rem;
+        margin-bottom: 1.05rem;
+      }
+
+      .roadmap-title {
+        font-weight: 800;
+        color: var(--accent);
+        margin-bottom: 0.55rem;
+        font-size: 0.86rem;
+      }
+
+      .roadmap-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 0.45rem;
+      }
+
+      .roadmap-item {
+        display: block;
+        text-decoration: none;
+        color: var(--text);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        background: rgba(0, 0, 0, 0.18);
+        padding: 0.52rem 0.62rem;
+        font-size: 0.84rem;
+        transition: border-color 130ms ease, transform 130ms ease;
+      }
+
+      .roadmap-item:hover {
+        border-color: var(--accent);
+        transform: translateY(-1px);
+      }
+
+      .roadmap-item b {
+        color: var(--accent);
+      }
+
+      .lecture-heading {
+        margin: 1.15rem 0 0.45rem;
+        display: flex;
+        align-items: center;
+        gap: 0.55rem;
+        font-size: 1rem;
+      }
+
+      .lecture-badge {
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.8rem;
+        font-weight: 800;
+        color: #0b1020;
+      }
+
+      .lecture-badge.blue { background: var(--accent); }
+      .lecture-badge.yellow { background: var(--accent-yellow); }
+      .lecture-badge.red { background: var(--danger); color: #fefefe; }
+      .lecture-badge.purple { background: var(--warn); }
+      .lecture-badge.green { background: var(--success); }
+      .lecture-badge.amber { background: var(--accent-2); }
+
+      .lecture-p {
+        margin: 0 0 0.7rem;
+        color: var(--text);
+        line-height: 1.62;
+        font-size: 0.93rem;
+      }
+
+      .callout {
+        border: 1px solid var(--border);
+        border-left-width: 4px;
+        border-radius: 10px;
+        padding: 0.68rem 0.78rem;
+        margin: 0.62rem 0;
+        background: rgba(0, 0, 0, 0.16);
+      }
+
+      .callout-title {
+        font-weight: 800;
+        margin-bottom: 0.32rem;
+        font-size: 0.83rem;
+      }
+
+      .callout p {
+        margin: 0;
+        line-height: 1.55;
+        font-size: 0.89rem;
+      }
+
+      .callout.key-concept {
+        border-left-color: var(--accent);
+        background: rgba(88, 166, 255, 0.08);
+      }
+
+      .callout.key-concept .callout-title { color: var(--accent); }
+
+      .callout.warning {
+        border-left-color: var(--danger);
+        background: rgba(248, 81, 73, 0.08);
+      }
+
+      .callout.warning .callout-title { color: var(--danger); }
+
+      .callout.example {
+        border-left-color: var(--accent-2);
+        background: rgba(240, 136, 62, 0.08);
+      }
+
+      .callout.example .callout-title { color: var(--accent-2); }
+
+      .callout.check {
+        border-left-color: var(--accent-yellow);
+        background: rgba(210, 153, 34, 0.08);
+      }
+
+      .callout.check .callout-title { color: var(--accent-yellow); }
+
+      .math-inline {
+        font-family: var(--mono);
+        font-size: 0.86rem;
+        color: var(--accent);
+      }
+
+      .code-block {
+        margin: 0.58rem 0;
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        background: #111922;
+        padding: 0.55rem 0.64rem;
+        font-family: var(--mono);
+        font-size: 0.84rem;
+        line-height: 1.5;
+        overflow: auto;
+      }
+
+      .lecture-list {
+        margin: 0.4rem 0 0.7rem;
+        padding-left: 1.2rem;
+        color: var(--text);
+        line-height: 1.55;
+        font-size: 0.9rem;
+      }
+
+      .panel {
+        display: none;
+        padding: 1rem;
+      }
+
+      .panel.active {
+        display: block;
+      }
+
+      .workspace {
+        display: grid;
+        gap: 1rem;
+        grid-template-columns: 320px 1fr;
+      }
+
+      .controls,
+      .viz,
+      .meta,
+      .subpanel {
+        background: var(--bg-panel);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+      }
+
+      .controls,
+      .subpanel {
+        padding: 0.8rem;
+      }
+
+      .controls {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+      }
+
+      .viz {
+        padding: 0.3rem;
+      }
+
+      .meta {
+        margin-top: 1rem;
+        grid-column: 1 / -1;
+        padding: 0.9rem;
+      }
+
+      .split-2 {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+      }
+
+      .metric-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(170px, 1fr));
+        gap: 0.5rem;
+        margin-top: 0.8rem;
+        font-family: var(--mono);
+        font-size: 0.9rem;
+      }
+
+      .metric {
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 0.45rem 0.55rem;
+        background: #131c26;
+      }
+
+      .metric .metric-label {
+        color: var(--accent);
+        font-weight: 700;
+      }
+
+      .metric .metric-value {
+        color: var(--text);
+        font-weight: 600;
+      }
+
+      .pseudocode {
+        margin: 0;
+        font-family: var(--mono);
+        font-size: 0.9rem;
+        max-height: 240px;
+        overflow: auto;
+        background: #111922;
+        padding: 0.55rem;
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+      }
+
+      .line {
+        display: block;
+        white-space: pre;
+        padding: 0.1rem 0.3rem;
+        border-radius: 4px;
+      }
+
+      .line.active {
+        background: var(--accent);
+        color: #071524;
+      }
+
+      .explanation {
+        margin-top: 0.7rem;
+        min-height: 2.2rem;
+        color: var(--text-dim);
+      }
+
+      .chart-svg,
+      .graph-svg {
+        width: 100%;
+        height: auto;
+        display: block;
+      }
+
+      .graph-svg {
+        min-height: 420px;
+      }
+
+      .edge {
+        stroke: var(--text-dim);
+        stroke-opacity: 0.92;
+        stroke-width: 2;
+        transition: stroke var(--tx-speed) ease-out, stroke-opacity var(--tx-speed) ease-out;
+      }
+
+      .edge.flash {
+        stroke: var(--accent-2);
+        stroke-width: 3;
+      }
+
+      .vertex circle {
+        fill: var(--color-unset);
+        stroke: #f2f6fc;
+        stroke-width: 1.4;
+        filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+        transition: fill var(--tx-speed) ease-out;
+      }
+
+      .vertex text {
+        font-size: 14px;
+        fill: var(--text);
+        dominant-baseline: middle;
+        text-anchor: middle;
+        font-weight: 600;
+      }
+
+      .vertex.current circle {
+        stroke: var(--accent-yellow);
+        stroke-width: 3;
+        animation: vertexPulse 1.5s ease-in-out infinite;
+      }
+
+      @keyframes vertexPulse {
+        0%, 100% { filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3)); }
+        50%      { filter: drop-shadow(0 0 10px var(--accent-yellow)); }
+      }
+
+      .concept {
+        margin-top: 0.8rem;
+        border-left: 4px solid var(--accent);
+        padding: 0.5rem 0.7rem;
+        background: #121a24;
+        color: var(--text-dim);
+      }
+
+      .inline-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.5rem;
+      }
+
+      .reduction-meta {
+        margin-top: 0.6rem;
+        font-family: var(--mono);
+        font-size: 0.88rem;
+      }
+
+      .np-proof-banner {
+        margin-top: 0.55rem;
+        padding: 0.5rem 0.65rem;
+        border: 1px solid var(--success);
+        border-radius: var(--radius);
+        background: rgba(63, 185, 80, 0.12);
+        color: var(--text);
+        display: flex;
+        align-items: center;
+        gap: 0.45rem;
+        font-weight: 700;
+      }
+
+      .np-proof-banner .icon {
+        color: var(--success);
+      }
+
+      .np-proof-banner[hidden] {
+        display: none !important;
+      }
+
+      .np-case-popover {
+        position: absolute;
+        z-index: 40;
+        width: min(720px, calc(100vw - 20px));
+        max-height: min(78vh, 560px);
+        overflow: auto;
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        background: var(--bg-elev);
+        color: var(--text);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+        padding: 0.65rem;
+      }
+
+      .np-case-popover[hidden] {
+        display: none !important;
+      }
+
+      .np-case-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.6rem;
+        margin-bottom: 0.5rem;
+      }
+
+      .np-case-header strong {
+        font-size: 0.95rem;
+      }
+
+      .np-case-meta {
+        font-size: 0.84rem;
+        color: var(--text-dim);
+      }
+
+      .np-case-close {
+        border: 1px solid var(--border);
+        background: transparent;
+        color: var(--text);
+        border-radius: var(--radius);
+        width: 1.8rem;
+        height: 1.8rem;
+        line-height: 1;
+        padding: 0;
+        font-size: 1rem;
+      }
+
+      .np-case-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.82rem;
+      }
+
+      .np-case-table th,
+      .np-case-table td {
+        border: 1px solid var(--border);
+        padding: 0.22rem 0.32rem;
+        text-align: center;
+      }
+
+      .np-case-table th {
+        position: sticky;
+        top: 0;
+        background: var(--bg-elev);
+      }
+
+      .np-case-table td.note {
+        text-align: left;
+        white-space: normal;
+      }
+
+      details {
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        background: #111a24;
+        padding: 0.55rem;
+      }
+
+      details summary {
+        cursor: pointer;
+        font-weight: 600;
+      }
+
+      .footer {
+        padding: 1rem;
+        color: var(--text-dim);
+        font-size: 0.86rem;
+      }
+
+      @media (max-width: 980px) {
+        .workspace,
+        .split-2,
+        .inline-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .roadmap-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .graph-svg {
+          min-height: 320px;
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        :root {
+          --tx-speed: 1ms;
+        }
+
+        * {
+          animation-duration: 1ms !important;
+          transition-duration: 1ms !important;
+          scroll-behavior: auto !important;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="title">3-Coloring Playground</div>
+      <div class="topbar-group">
+        <label for="global-speed">Speed</label>
+        <input id="global-speed" type="range" min="1" max="10" value="5" />
+      </div>
+      <label class="topbar-group" for="pattern-mode">
+        <input id="pattern-mode" type="checkbox" />
+        Pattern Mode
+      </label>
+      <div class="topbar-group">Step <span id="global-step">0/0</span></div>
+      <div class="topbar-group">Status <span id="global-status" class="status status-idle">Idle</span></div>
+      <button id="reset-all">Reset All</button>
+    </header>
+
+    <div class="intro-section">
+      <div class="intro-card">
+        <div class="intro-header" id="lectureToggleBtn">
+          <h2>Lecture Notes — Start Here</h2>
+          <button id="lectureToggleText" class="intro-toggle" type="button">Collapse</button>
+        </div>
+        <div class="intro-body" id="lectureBody">
+          <div class="roadmap">
+            <div class="roadmap-title">Learning Roadmap</div>
+            <div class="roadmap-grid">
+              <a href="#sec1" class="roadmap-item"><b>1.</b> What is Graph Coloring?</a>
+              <a href="#sec2" class="roadmap-item"><b>2.</b> The 3-Coloring Problem</a>
+              <a href="#sec3" class="roadmap-item"><b>3.</b> Why It's Hard — NP-Completeness</a>
+              <a href="#sec4" class="roadmap-item"><b>4.</b> Reduction from 3-SAT</a>
+              <a href="#sec5" class="roadmap-item"><b>5.</b> Exact Algorithm — Backtracking</a>
+              <a href="#sec6" class="roadmap-item"><b>6.</b> Practical Algorithm — Greedy</a>
+              <a href="#sec7" class="roadmap-item"><b>7.</b> When Greedy Fails — Crown Graph</a>
+              <a href="#sec8" class="roadmap-item"><b>8.</b> Interactive Tool — Try It Yourself</a>
+            </div>
+          </div>
+          <h3 id="sec1" class="lecture-heading"><span class="lecture-badge blue">1</span>What is Graph Coloring?</h3>
+          <p class="lecture-p">
+            Graph coloring assigns a color to each vertex so that neighboring vertices never share a color.
+            This appears in register allocation, exam scheduling, and frequency assignment.
+          </p>
+          <div class="callout key-concept">
+            <div class="callout-title">Key Concept</div>
+            <p>
+              A coloring is a function <span class="math-inline">c: V -> {1,2,3,...}</span>. A graph is properly colored when
+              every edge <span class="math-inline">(u,v)</span> satisfies <span class="math-inline">c(u) != c(v)</span>.
+              The smallest number of colors needed is <span class="math-inline">chi(G)</span>.
+            </p>
+          </div>
+          <div class="callout example">
+            <div class="callout-title">Example</div>
+            <p>
+              In a 5-cycle, three colors are enough: color around the cycle with 0,1,2,0,1. Any attempt with only two
+              colors fails because an odd cycle forces a conflict.
+            </p>
+          </div>
+          <div class="callout check">
+            <div class="callout-title">Check Understanding</div>
+            <p>If two vertices are not adjacent, they may share a color. Only edges impose constraints.</p>
+          </div>
+          <p class="lecture-p"><b>Try it yourself:</b> Playground -> preset <code>C5</code> -> <code>Build Steps</code> -> <code>Step</code>.</p>
+
+          <h3 id="sec2" class="lecture-heading"><span class="lecture-badge yellow">2</span>The 3-Coloring Problem</h3>
+          <p class="lecture-p">
+            The decision problem asks: given graph <span class="math-inline">G</span>, does there exist a proper coloring using at most 3 colors?
+            This threshold is where complexity changes sharply.
+          </p>
+          <div class="callout key-concept">
+            <div class="callout-title">Formal Statement</div>
+            <p><span class="math-inline">3-COL = { G | chi(G) <= 3 }</span>. Output is YES/NO, not the minimum color count.</p>
+          </div>
+          <div class="callout warning">
+            <div class="callout-title">Important Distinction</div>
+            <p>2-coloring is polynomial (bipartite check), but 3-coloring is NP-complete.</p>
+          </div>
+          <div class="callout check">
+            <div class="callout-title">Quick Test</div>
+            <p><code>K4</code> is not 3-colorable because all four vertices are pairwise adjacent and require four distinct colors.</p>
+          </div>
+          <p class="lecture-p">
+            <b>Try it yourself:</b> Playground -> preset <code>K4</code> -> set algorithm to <code>Backtracking (k=3)</code> ->
+            <code>Build Steps</code> -> <code>Play</code>.
+          </p>
+
+          <h3 id="sec3" class="lecture-heading"><span class="lecture-badge red">3</span>Why It's Hard — NP-Completeness</h3>
+          <p class="lecture-p">
+            A problem is in NP when a proposed solution can be verified quickly. For 3-coloring, a certificate is simply
+            a color assignment for each vertex.
+          </p>
+          <div class="callout key-concept">
+            <div class="callout-title">Verifier Runtime</div>
+            <p>
+              Scan every edge once and reject if endpoints have equal colors.
+              This is <span class="math-inline">O(|V|+|E|)</span> time, so 3-coloring is in NP.
+            </p>
+          </div>
+          <div class="code-block">for each edge (u, v) in E:
+  if color[u] == color[v]:
+    reject
+accept</div>
+          <div class="callout warning">
+            <div class="callout-title">Do Not Over-Claim</div>
+            <p>NP-complete does not prove impossible; it means no polynomial-time algorithm is known unless <span class="math-inline">P = NP</span>.</p>
+          </div>
+          <p class="lecture-p"><b>Try it yourself:</b> NP-Completeness tab -> Verifier panel -> assign colors -> <code>Verify</code>.</p>
+
+          <h3 id="sec4" class="lecture-heading"><span class="lecture-badge purple">4</span>Reduction from 3-SAT</h3>
+          <p class="lecture-p">
+            To prove NP-hardness, we map any 3-CNF formula <span class="math-inline">phi</span> to a graph <span class="math-inline">G_phi</span> so that
+            <span class="math-inline">phi</span> is satisfiable if and only if <span class="math-inline">G_phi</span> is 3-colorable.
+          </p>
+          <div class="callout key-concept">
+            <div class="callout-title">Reduction Contract</div>
+            <p>Palette triangle enforces colors <code>T,F,B</code>, variable gadgets force each variable to choose exactly one of <code>T/F</code>, and clause gadgets enforce OR behavior.</p>
+          </div>
+          <div class="callout example">
+            <div class="callout-title">Clause Gadget (Spec-aligned)</div>
+            <p>Each clause adds internal vertices <code>x,y,z,m,n,o</code> with fixed edges and anchor <code>o-F</code>. This is the core satisfiability constraint.</p>
+          </div>
+          <div class="code-block">Literal links: a-x, b-y, c-z
+Internal: x-y, x-m, y-m, m-n, n-z, n-o, z-o
+Anchor: o-F</div>
+          <div class="callout check">
+            <div class="callout-title">Check Understanding</div>
+            <p>Forward direction extends a satisfying assignment into a 3-coloring; backward direction reads an assignment from any valid 3-coloring.</p>
+          </div>
+          <p class="lecture-p"><b>Try it yourself:</b> NP-Completeness tab -> enter formula -> <code>Build Graph</code> -> inspect a clause gadget.</p>
+          <h3 id="sec5" class="lecture-heading"><span class="lecture-badge green">5</span>Exact Algorithm — Backtracking</h3>
+          <p class="lecture-p">
+            Backtracking is an exact solver: assign a color, check safety, recurse, and undo on conflict.
+            It guarantees correctness but can grow exponentially.
+          </p>
+          <div class="callout key-concept">
+            <div class="callout-title">Pruning Rule</div>
+            <p>Before assigning a color to a vertex, check neighbors. If any neighbor already has that color, skip immediately.</p>
+          </div>
+          <div class="code-block">BACKTRACK(i):
+  if i == n: return true
+  v = orderedVertices[i]
+  for c in {0,1,2}:
+    if SAFE(v,c):
+      color[v] = c
+      if BACKTRACK(i+1): return true
+      color[v] = null
+  return false</div>
+          <div class="callout check">
+            <div class="callout-title">Complexity Reality</div>
+            <p>Worst-case remains exponential (about <span class="math-inline">O(3^n)</span> branches), but pruning often cuts many branches in practice.</p>
+          </div>
+          <p class="lecture-p"><b>Try it yourself:</b> Algorithms tab -> source <code>K4</code> -> <code>Build &amp; Run Both</code> and compare operations.</p>
+
+          <h3 id="sec6" class="lecture-heading"><span class="lecture-badge amber">6</span>Practical Algorithm — Greedy</h3>
+          <p class="lecture-p">
+            Greedy scans vertices in an ordering and gives each vertex the smallest available color not used by its colored neighbors.
+            It is fast, simple, and ordering-sensitive.
+          </p>
+          <div class="callout key-concept">
+            <div class="callout-title">Performance Guarantee</div>
+            <p>Greedy runs in <span class="math-inline">O(V+E)</span> and uses at most <span class="math-inline">Delta + 1</span> colors for any ordering.</p>
+          </div>
+          <div class="callout warning">
+            <div class="callout-title">What It Does Not Guarantee</div>
+            <p>Greedy does not guarantee near-optimal <span class="math-inline">chi(G)</span> on general graphs. A bad order can be much worse than optimal.</p>
+          </div>
+          <div class="callout example">
+            <div class="callout-title">Ordering Effect</div>
+            <p>The same graph may use fewer colors under Welsh-Powell than under natural insertion order.</p>
+          </div>
+          <p class="lecture-p"><b>Try it yourself:</b> Algorithms tab -> source <code>C6</code> -> switch ordering -> rerun and compare color counts.</p>
+
+          <div class="callout key-concept" style="margin-top: 0.95rem;">
+            <div class="callout-title">Common Thread</div>
+            <p>
+              All methods here are constraint-driven. The NP verifier checks constraints, backtracking enforces them exactly
+              through search, and greedy enforces them locally with speed-oriented decisions.
+            </p>
+          </div>
+
+          <h3 id="sec7" class="lecture-heading"><span class="lecture-badge red">7</span>When Greedy Fails — Crown Graph</h3>
+          <p class="lecture-p">
+            Crown <span class="math-inline">S8</span> is bipartite, so <span class="math-inline">chi(S8)=2</span>. But with interleaved natural order
+            <code>a1,b1,a2,b2,a3,b3,a4,b4</code>, greedy can use 4 colors.
+          </p>
+          <div class="callout example">
+            <div class="callout-title">Counterexample Message</div>
+            <p>Same graph, different ordering: natural can use 4 colors while Welsh-Powell returns 2 on this exact graph.</p>
+          </div>
+          <div class="callout warning">
+            <div class="callout-title">Why This Matters</div>
+            <p>If we could always find the best ordering efficiently, we could solve hard coloring instances much more directly.</p>
+          </div>
+          <div class="callout check">
+            <div class="callout-title">Check Understanding</div>
+            <p>The graph stays bipartite regardless of ordering; only greedy's behavior changes with the order.</p>
+          </div>
+          <p class="lecture-p"><b>Try it yourself:</b> Design tab -> run crown counterexample under Natural and Welsh-Powell.</p>
+
+          <h3 id="sec8" class="lecture-heading"><span class="lecture-badge blue">8</span>Interactive Tool — Try It Yourself</h3>
+          <p class="lecture-p">
+            Use this sequence as a mini-lab to connect the proof ideas with algorithm behavior and concrete graphs.
+          </p>
+          <div class="callout key-concept">
+            <div class="callout-title">Teaching Tip</div>
+            <p>Present the flow as: impossibility instance (<code>K4</code>) -> exact vs heuristic comparison -> ordering counterexample -> NP reduction proof.</p>
+          </div>
+          <ol class="lecture-list">
+            <li>Playground: load <code>K4</code>, set Backtracking, then <code>Build Steps</code> and <code>Play</code>.</li>
+            <li>Algorithms: source <code>Petersen</code>, click <code>Build &amp; Run Both</code>, compare operations and wall time.</li>
+            <li>Design: run crown counterexample with Natural then Welsh-Powell ordering.</li>
+            <li>NP-Completeness: input <code>(x1 v x2 v -x3) ^ (-x1 v x2 v x3)</code>, then <code>Build Graph</code>, <code>Forward Direction</code>, and <code>Backward Direction</code>.</li>
+          </ol>
+          <div class="callout check">
+            <div class="callout-title">Self-check</div>
+            <p>After the lab, you should explain why K4 fails, why greedy can over-color, and why the reduction is an iff proof.</p>
+          </div>
+          <div class="callout example">
+            <div class="callout-title">Appendix Hook — Exact vs Exponential</div>
+            <p>
+              Keep in mind why these practical workflows matter: exact coloring can require exponential search,
+              which is why heuristics and proof-guided demonstrations are central in real systems.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <nav class="tabs" role="tablist" aria-label="Main tabs">
+      <button class="tab-btn active" role="tab" aria-selected="true" data-tab="playground">Playground</button>
+      <button class="tab-btn" role="tab" aria-selected="false" data-tab="algorithms">Algorithms</button>
+      <button class="tab-btn" role="tab" aria-selected="false" data-tab="design">Design</button>
+      <button class="tab-btn" role="tab" aria-selected="false" data-tab="np">NP-Completeness</button>
+    </nav>
+
+    <main>
+      <section id="tab-playground" class="panel active">
+        <details open>
+          <summary>3-Coloring Overview</summary>
+          <p>Given graph <code>G = (V, E)</code>, decide whether vertices can be colored with three colors so adjacent vertices differ.</p>
+          <ul>
+            <li>2-coloring is polynomial (check bipartiteness via BFS).</li>
+            <li>3-coloring is NP-complete.</li>
+            <li>Applications: register allocation, exam scheduling, frequency assignment.</li>
+          </ul>
+        </details>
+        <div class="workspace" style="margin-top: 1rem">
+          <aside class="controls">
+            <label>
+              Preset
+              <select id="pg-preset"></select>
+            </label>
+            <label>
+              Layout
+              <select id="pg-layout">
+                <option value="manual">Manual</option>
+                <option value="circle">Circle</option>
+                <option value="force">Force</option>
+              </select>
+            </label>
+            <label>
+              Algorithm
+              <select id="pg-algorithm">
+                <option value="greedy">Greedy</option>
+                <option value="backtracking">Backtracking (k=3)</option>
+              </select>
+            </label>
+            <label>
+              Greedy ordering
+              <select id="pg-ordering">
+                <option value="natural">Natural</option>
+                <option value="welsh-powell">Welsh-Powell</option>
+                <option value="random">Random</option>
+                <option value="reverse-degree">Reverse Degree</option>
+              </select>
+            </label>
+            <div class="inline-grid">
+              <button id="pg-build">Build Steps</button>
+              <button id="pg-step">Step</button>
+              <button id="pg-play">Play</button>
+              <button id="pg-pause">Pause</button>
+              <button id="pg-back">Step Back</button>
+              <button id="pg-reset">Reset</button>
+            </div>
+            <label>
+              Edit edge list
+              <textarea id="pg-edge-list" rows="6" placeholder="0-1, 1-2, 2-0"></textarea>
+            </label>
+            <div class="inline-grid">
+              <button id="pg-load-edge-list">Load Edge List</button>
+              <button id="pg-export-edge-list">Export Edge List</button>
+            </div>
+            <label>
+              <input id="pg-edit-mode" type="checkbox" /> Edit mode
+            </label>
+            <p style="margin: 0; color: var(--text-dim); font-size: 0.87rem">
+              Edit mode: click canvas to add vertex, click one vertex then Shift+click another to add edge, drag to move, right-click to delete.
+            </p>
+          </aside>
+
+          <section class="viz">
+            <svg id="pg-svg" class="graph-svg" viewBox="0 0 800 500" aria-label="Playground graph"></svg>
+          </section>
+
+          <section class="meta">
+            <div class="metric-grid" id="pg-counters"></div>
+            <pre class="pseudocode" id="pg-pseudocode"></pre>
+            <div class="explanation" id="pg-explanation">Build steps to start animation.</div>
+          </section>
+        </div>
+      </section>
+
+      <section id="tab-algorithms" class="panel">
+        <div class="workspace">
+          <aside class="controls">
+            <label>
+              Source graph
+              <select id="alg-source"></select>
+            </label>
+            <label>
+              Greedy ordering
+              <select id="alg-ordering">
+                <option value="welsh-powell">Welsh-Powell</option>
+                <option value="natural">Natural</option>
+                <option value="random">Random</option>
+                <option value="reverse-degree">Reverse Degree</option>
+              </select>
+            </label>
+            <div class="inline-grid">
+              <button id="alg-build-run">Build &amp; Run Both</button>
+              <button id="alg-pause">Pause Both</button>
+              <button id="alg-reset">Reset Both</button>
+            </div>
+            <button id="alg-benchmark">Benchmark</button>
+            <div class="concept">Greedy is fast and ordering-sensitive. Backtracking is exact but can explode exponentially.</div>
+          </aside>
+
+          <section class="viz">
+            <div class="split-2">
+              <div class="subpanel">
+                <h3 style="margin-top: 0">Greedy</h3>
+                <svg
+                  id="alg-greedy-svg"
+                  class="graph-svg"
+                  viewBox="0 0 800 500"
+                  aria-label="Greedy algorithm graph"
+                  data-empty-hint="Click Build &amp; Run Both to begin"
+                ></svg>
+                <div class="metric-grid" id="alg-greedy-metrics"></div>
+              </div>
+              <div class="subpanel">
+                <h3 style="margin-top: 0">Backtracking</h3>
+                <svg
+                  id="alg-back-svg"
+                  class="graph-svg"
+                  viewBox="0 0 800 500"
+                  aria-label="Backtracking algorithm graph"
+                  data-empty-hint="Click Build &amp; Run Both to begin"
+                ></svg>
+                <div class="metric-grid" id="alg-back-metrics"></div>
+              </div>
+            </div>
+            <div class="subpanel" style="margin-top: 1rem">
+              <h3 style="margin-top: 0">Growth Curve</h3>
+              <svg id="alg-chart" class="chart-svg" viewBox="0 0 600 300" aria-label="Benchmark chart"></svg>
+            </div>
+          </section>
+
+          <section class="meta">
+            <pre class="pseudocode" id="alg-pseudocode"></pre>
+            <div class="explanation" id="alg-explanation">Use Build &amp; Run Both to compare algorithms on the same graph.</div>
+          </section>
+        </div>
+      </section>
+
+      <section id="tab-design" class="panel">
+        <div class="split-2">
+          <section class="subpanel">
+            <h3 style="margin-top: 0">Backtracking (Exact)</h3>
+            <ul>
+              <li>Paradigm: backtracking with constraint checks.</li>
+              <li>Use when exact 3-coloring decision is required.</li>
+              <li>Worst case complexity: <code>O(k^V * E)</code>.</li>
+              <li>Pruning: skip colors already used by a neighbor.</li>
+            </ul>
+          </section>
+          <section class="subpanel">
+            <h3 style="margin-top: 0">Greedy (Heuristic)</h3>
+            <ul>
+              <li>Paradigm: greedy coloring with fixed ordering.</li>
+              <li>Complexity: <code>O(V + E)</code>.</li>
+              <li>Guarantee: at most <code>Delta + 1</code> colors.</li>
+              <li>No known constant-factor approximation for general <code>chi(G)</code> unless <code>P = NP</code>.</li>
+            </ul>
+          </section>
+        </div>
+        <div class="workspace" style="margin-top: 1rem">
+          <aside class="controls">
+            <h3 style="margin-top: 0">Crown Counterexample</h3>
+            <p style="color: var(--text-dim)">
+              Crown graph is bipartite but greedy can use many colors with a bad ordering.
+            </p>
+            <label>
+              Ordering
+              <select id="design-ordering">
+                <option value="natural">Natural</option>
+                <option value="welsh-powell">Welsh-Powell</option>
+                <option value="random">Random</option>
+                <option value="reverse-degree">Reverse Degree</option>
+              </select>
+            </label>
+            <button id="design-run-greedy">Run Greedy</button>
+            <div class="metric-grid" id="design-metrics"></div>
+          </aside>
+          <section class="viz">
+            <svg id="design-svg" class="graph-svg" viewBox="0 0 800 500" aria-label="Design crown graph"></svg>
+          </section>
+          <section class="meta">
+            <div class="explanation" id="design-explanation">Run greedy to compare ordering effects on the crown graph.</div>
+          </section>
+        </div>
+      </section>
+
+      <section id="tab-np" class="panel">
+        <div class="subpanel">
+          <h3 style="margin-top: 0">A. 3-Coloring is in NP (Verifier)</h3>
+          <div class="workspace">
+            <aside class="controls">
+              <label>
+                Verifier preset
+                <select id="np-verify-preset"></select>
+              </label>
+              <div id="np-color-form"></div>
+              <button id="np-verify">Verify</button>
+              <div id="np-verify-result" class="status">Idle</div>
+            </aside>
+            <section class="viz">
+              <svg id="np-verify-svg" class="graph-svg" viewBox="0 0 800 500" aria-label="Verifier graph"></svg>
+            </section>
+          </div>
+        </div>
+
+        <div class="subpanel" style="margin-top: 1rem">
+          <h3 style="margin-top: 0">B. 3-SAT to 3-Coloring Reduction</h3>
+          <div class="workspace">
+            <aside class="controls">
+              <label>
+                3-CNF formula
+                <textarea id="np-formula" rows="4">(x1 v x2 v -x3) ^ (-x1 v x2 v x3)</textarea>
+              </label>
+              <button id="np-build-reduction">Build Graph</button>
+              <button id="np-forward">Forward Direction</button>
+              <button id="np-backward">Backward Direction</button>
+              <div class="reduction-meta" id="np-size-readout"></div>
+            </aside>
+            <section class="viz">
+              <svg id="np-reduction-svg" class="graph-svg" viewBox="0 0 800 500" aria-label="Reduction graph"></svg>
+              <div class="explanation" id="np-reduction-explanation">Build a reduction graph from the formula to start.</div>
+              <div id="np-forward-banner" class="np-proof-banner" hidden>
+                <span class="icon" aria-hidden="true">✓</span>
+                <span>ACCEPT — formula is satisfied, graph is 3-coloured.</span>
+              </div>
+              <div id="np-backward-banner" class="np-proof-banner" hidden>
+                <span class="icon" aria-hidden="true">✓</span>
+                <span>Formula satisfied.</span>
+              </div>
+              <div
+                id="np-clause-popover"
+                class="np-case-popover"
+                role="dialog"
+                aria-label="Clause gadget case analysis"
+                aria-modal="false"
+                hidden
+              ></div>
+            </section>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">Single-file vanilla JS implementation for BCS 309 Final Project.</footer>
+
+    <script type="module">
+      const SVG_NS = "http://www.w3.org/2000/svg";
+      const COLOR_MAP = {
+        null: "var(--color-unset)",
+        0: "var(--color-1)",
+        1: "var(--color-2)",
+        2: "var(--color-3)",
+        3: "var(--color-4)"
+      };
+
+      class Graph {
+        constructor() {
+          this.vertices = new Map();
+          this.edges = new Map();
+          this.adj = new Map();
+          this.nextId = 0;
+        }
+
+        addVertex({ x, y, label = null, fixed = false, meta = {} }) {
+          const id = this.nextId++;
+          const vertex = {
+            id,
+            label: label ?? `v${id}`,
+            x,
+            y,
+            color: null,
+            fixed,
+            meta: { ...meta }
+          };
+          this.vertices.set(id, vertex);
+          this.adj.set(id, new Set());
+          return id;
+        }
+
+        removeVertex(id) {
+          if (!this.vertices.has(id)) {
+            return;
+          }
+          const neighbors = [...(this.adj.get(id) || [])];
+          for (const n of neighbors) {
+            this.removeEdge(id, n);
+          }
+          this.vertices.delete(id);
+          this.adj.delete(id);
+        }
+
+        edgeId(u, v) {
+          const a = Math.min(u, v);
+          const b = Math.max(u, v);
+          return `${a}-${b}`;
+        }
+
+        addEdge(u, v) {
+          if (u === v || !this.vertices.has(u) || !this.vertices.has(v)) {
+            return;
+          }
+          const id = this.edgeId(u, v);
+          if (this.edges.has(id)) {
+            return;
+          }
+          this.edges.set(id, { id, u: Math.min(u, v), v: Math.max(u, v) });
+          this.adj.get(u).add(v);
+          this.adj.get(v).add(u);
+        }
+
+        removeEdge(u, v) {
+          const id = this.edgeId(u, v);
+          if (!this.edges.has(id)) {
+            return;
+          }
+          this.edges.delete(id);
+          this.adj.get(u)?.delete(v);
+          this.adj.get(v)?.delete(u);
+        }
+
+        neighbors(id) {
+          return this.adj.get(id) || new Set();
+        }
+
+        degree(id) {
+          return this.adj.get(id)?.size || 0;
+        }
+
+        resetColors() {
+          for (const v of this.vertices.values()) {
+            v.color = null;
+          }
+        }
+
+        clone() {
+          const g = new Graph();
+          g.nextId = this.nextId;
+          for (const v of this.vertices.values()) {
+            g.vertices.set(v.id, { ...v, meta: { ...v.meta } });
+            g.adj.set(v.id, new Set());
+          }
+          for (const e of this.edges.values()) {
+            g.edges.set(e.id, { ...e });
+            g.adj.get(e.u).add(e.v);
+            g.adj.get(e.v).add(e.u);
+          }
+          return g;
+        }
+
+        toEdgeList() {
+          return [...this.edges.values()]
+            .map((e) => `${e.u}-${e.v}`)
+            .join(", ");
+        }
+
+        fromEdgeList(str) {
+          const parsed = [];
+          const tokens = str
+            .split(/[\n,]+/)
+            .map((x) => x.trim())
+            .filter(Boolean);
+          let maxV = -1;
+          for (const token of tokens) {
+            const m = token.match(/^(\d+)\s*-\s*(\d+)$/);
+            if (!m) {
+              throw new Error(`Invalid edge token: ${token}`);
+            }
+            const u = Number(m[1]);
+            const v = Number(m[2]);
+            parsed.push([u, v]);
+            maxV = Math.max(maxV, u, v);
+          }
+          this.vertices.clear();
+          this.edges.clear();
+          this.adj.clear();
+          this.nextId = 0;
+          for (let i = 0; i <= maxV; i += 1) {
+            this.addVertex({ x: 120 + (i % 6) * 110, y: 120 + Math.floor(i / 6) * 100 });
+          }
+          for (const [u, v] of parsed) {
+            this.addEdge(u, v);
+          }
+        }
+
+        _validate() {
+          for (const e of this.edges.values()) {
+            if (!this.adj.get(e.u)?.has(e.v) || !this.adj.get(e.v)?.has(e.u)) {
+              throw new Error(`Adjacency mismatch on edge ${e.id}`);
+            }
+          }
+          for (const [u, ns] of this.adj.entries()) {
+            for (const v of ns) {
+              const id = this.edgeId(u, v);
+              if (!this.edges.has(id)) {
+                throw new Error(`Missing edge map entry for adjacency ${u}-${v}`);
+              }
+            }
+          }
+        }
+      }
+
+      class GraphRenderer {
+        constructor(svgElement, graph) {
+          this.svg = svgElement;
+          this.graph = graph;
+          this.layout = "manual";
+          this.nodeEls = new Map();
+          this.edgeEls = new Map();
+          this.editEnabled = false;
+          this.draggingId = null;
+          this.pendingEdgeStart = null;
+          this.bindEvents();
+        }
+
+        static patternMode = false;
+
+        bindEvents() {
+          this.svg.addEventListener("click", (event) => {
+            if (!this.editEnabled || event.target !== this.svg) {
+              return;
+            }
+            const { x, y } = this.svgPoint(event);
+            this.graph.addVertex({ x, y });
+            this.render();
+          });
+
+          this.svg.addEventListener("contextmenu", (event) => {
+            if (!this.editEnabled) {
+              return;
+            }
+            const g = event.target.closest("g.vertex");
+            if (!g) {
+              return;
+            }
+            event.preventDefault();
+            const id = Number(g.dataset.id);
+            this.graph.removeVertex(id);
+            this.render();
+          });
+
+          this.svg.addEventListener("mousedown", (event) => {
+            if (!this.editEnabled) {
+              return;
+            }
+            const g = event.target.closest("g.vertex");
+            if (!g) {
+              return;
+            }
+            this.draggingId = Number(g.dataset.id);
+          });
+
+          window.addEventListener("mousemove", (event) => {
+            if (!this.editEnabled || this.draggingId === null) {
+              return;
+            }
+            const { x, y } = this.svgPoint(event);
+            const v = this.graph.vertices.get(this.draggingId);
+            if (!v) {
+              return;
+            }
+            v.x = Math.max(20, Math.min(780, x));
+            v.y = Math.max(20, Math.min(480, y));
+            this.updateVertex(v.id);
+            this.renderEdgesOnly();
+          });
+
+          window.addEventListener("mouseup", () => {
+            this.draggingId = null;
+          });
+
+          this.svg.addEventListener("click", (event) => {
+            if (!this.editEnabled) {
+              return;
+            }
+            const g = event.target.closest("g.vertex");
+            if (!g) {
+              return;
+            }
+            const id = Number(g.dataset.id);
+            if (event.shiftKey && this.pendingEdgeStart !== null && this.pendingEdgeStart !== id) {
+              this.graph.addEdge(this.pendingEdgeStart, id);
+              this.pendingEdgeStart = null;
+              this.render();
+              return;
+            }
+            this.pendingEdgeStart = id;
+            this.highlightCurrentVertex(id);
+          });
+        }
+
+        svgPoint(event) {
+          const pt = this.svg.createSVGPoint();
+          pt.x = event.clientX;
+          pt.y = event.clientY;
+          const ctm = this.svg.getScreenCTM();
+          return ctm ? pt.matrixTransform(ctm.inverse()) : { x: 400, y: 250 };
+        }
+
+        setGraph(graph) {
+          this.graph = graph;
+          this.nodeEls.clear();
+          this.edgeEls.clear();
+          this.render();
+        }
+
+        setLayout(kind) {
+          this.layout = kind;
+          if (kind === "circle") {
+            this.applyCircleLayout();
+          } else if (kind === "force") {
+            this.applyForceLayout();
+          }
+          this.render();
+        }
+
+        applyCircleLayout() {
+          const verts = [...this.graph.vertices.values()];
+          const n = verts.length;
+          if (n === 0) {
+            return;
+          }
+          const cx = 400;
+          const cy = 250;
+          const r = Math.min(200, 45 + n * 8);
+          verts.forEach((v, i) => {
+            const a = (2 * Math.PI * i) / n - Math.PI / 2;
+            v.x = cx + r * Math.cos(a);
+            v.y = cy + r * Math.sin(a);
+          });
+        }
+
+        applyForceLayout(iter = 120) {
+          const verts = [...this.graph.vertices.values()];
+          const n = verts.length;
+          if (n < 2) {
+            return;
+          }
+          const k = Math.sqrt((800 * 500) / n);
+          for (let t = 0; t < iter; t += 1) {
+            const disp = new Map();
+            for (const v of verts) {
+              disp.set(v.id, { x: 0, y: 0 });
+            }
+            for (let i = 0; i < n; i += 1) {
+              for (let j = i + 1; j < n; j += 1) {
+                const v = verts[i];
+                const u = verts[j];
+                let dx = v.x - u.x;
+                let dy = v.y - u.y;
+                const dist = Math.max(0.01, Math.hypot(dx, dy));
+                const force = (k * k) / dist;
+                dx /= dist;
+                dy /= dist;
+                disp.get(v.id).x += dx * force;
+                disp.get(v.id).y += dy * force;
+                disp.get(u.id).x -= dx * force;
+                disp.get(u.id).y -= dy * force;
+              }
+            }
+            for (const e of this.graph.edges.values()) {
+              const v = this.graph.vertices.get(e.u);
+              const u = this.graph.vertices.get(e.v);
+              let dx = v.x - u.x;
+              let dy = v.y - u.y;
+              const dist = Math.max(0.01, Math.hypot(dx, dy));
+              const force = (dist * dist) / k;
+              dx /= dist;
+              dy /= dist;
+              disp.get(v.id).x -= dx * force;
+              disp.get(v.id).y -= dy * force;
+              disp.get(u.id).x += dx * force;
+              disp.get(u.id).y += dy * force;
+            }
+            const temp = 12 * (1 - t / iter);
+            for (const v of verts) {
+              if (v.fixed) {
+                continue;
+              }
+              const d = disp.get(v.id);
+              const len = Math.max(0.01, Math.hypot(d.x, d.y));
+              v.x = Math.max(20, Math.min(780, v.x + (d.x / len) * Math.min(temp, len)));
+              v.y = Math.max(20, Math.min(480, v.y + (d.y / len) * Math.min(temp, len)));
+            }
+          }
+        }
+
+        enableEditing(on) {
+          this.editEnabled = on;
+          this.pendingEdgeStart = null;
+        }
+
+        clear() {
+          this.svg.innerHTML = "";
+          this.nodeEls.clear();
+          this.edgeEls.clear();
+        }
+
+        setPatternMode(on) {
+          GraphRenderer.patternMode = on;
+          this.render();
+        }
+
+        fillForColor(color) {
+          if (GraphRenderer.patternMode && color !== null && color !== undefined) {
+            return `url(#pat-${color})`;
+          }
+          return COLOR_MAP[color];
+        }
+
+        ensurePatternDefs() {
+          if (!GraphRenderer.patternMode) {
+            return;
+          }
+          const defs = document.createElementNS(SVG_NS, "defs");
+          const base = [
+            { idx: 0, stroke: "#ffd5d7", angle: 45 },
+            { idx: 1, stroke: "#d7ffe8", angle: -45 },
+            { idx: 2, stroke: "#d6e6ff", angle: 0 },
+            { idx: 3, stroke: "#fff0c1", angle: 90 }
+          ];
+          for (const p of base) {
+            const pat = document.createElementNS(SVG_NS, "pattern");
+            pat.setAttribute("id", `pat-${p.idx}`);
+            pat.setAttribute("patternUnits", "userSpaceOnUse");
+            pat.setAttribute("width", "8");
+            pat.setAttribute("height", "8");
+            const rect = document.createElementNS(SVG_NS, "rect");
+            rect.setAttribute("width", "8");
+            rect.setAttribute("height", "8");
+            rect.setAttribute("fill", COLOR_MAP[p.idx]);
+            const line = document.createElementNS(SVG_NS, "line");
+            if (p.angle === 45) {
+              line.setAttribute("x1", "0");
+              line.setAttribute("y1", "8");
+              line.setAttribute("x2", "8");
+              line.setAttribute("y2", "0");
+            } else if (p.angle === -45) {
+              line.setAttribute("x1", "0");
+              line.setAttribute("y1", "0");
+              line.setAttribute("x2", "8");
+              line.setAttribute("y2", "8");
+            } else if (p.angle === 90) {
+              line.setAttribute("x1", "4");
+              line.setAttribute("y1", "0");
+              line.setAttribute("x2", "4");
+              line.setAttribute("y2", "8");
+            } else {
+              line.setAttribute("x1", "0");
+              line.setAttribute("y1", "4");
+              line.setAttribute("x2", "8");
+              line.setAttribute("y2", "4");
+            }
+            line.setAttribute("stroke", p.stroke);
+            line.setAttribute("stroke-width", "1.2");
+            pat.appendChild(rect);
+            pat.appendChild(line);
+            defs.appendChild(pat);
+          }
+          this.svg.appendChild(defs);
+        }
+
+        render() {
+          this.svg.innerHTML = "";
+          this.nodeEls.clear();
+          this.edgeEls.clear();
+          if (this.graph.vertices.size === 0) {
+            const hint = this.svg.dataset.emptyHint;
+            if (hint) {
+              const text = document.createElementNS(SVG_NS, "text");
+              text.setAttribute("x", "400");
+              text.setAttribute("y", "250");
+              text.setAttribute("text-anchor", "middle");
+              text.setAttribute("fill", "var(--text-dim)");
+              text.setAttribute("font-size", "16");
+              text.textContent = hint;
+              this.svg.appendChild(text);
+            }
+            return;
+          }
+          this.ensurePatternDefs();
+          for (const e of this.graph.edges.values()) {
+            const u = this.graph.vertices.get(e.u);
+            const v = this.graph.vertices.get(e.v);
+            if (!u || !v) {
+              continue;
+            }
+            const line = document.createElementNS(SVG_NS, "line");
+            line.setAttribute("x1", String(u.x));
+            line.setAttribute("y1", String(u.y));
+            line.setAttribute("x2", String(v.x));
+            line.setAttribute("y2", String(v.y));
+            line.classList.add("edge");
+            line.dataset.id = e.id;
+            line.appendChild(this.makeTitle(`Edge ${u.label}-${v.label}`));
+            this.svg.appendChild(line);
+            this.edgeEls.set(e.id, line);
+          }
+          for (const v of this.graph.vertices.values()) {
+            const group = document.createElementNS(SVG_NS, "g");
+            group.classList.add("vertex");
+            group.dataset.id = String(v.id);
+            const circle = document.createElementNS(SVG_NS, "circle");
+            circle.setAttribute("cx", String(v.x));
+            circle.setAttribute("cy", String(v.y));
+            circle.setAttribute("r", "18");
+            circle.setAttribute("fill", this.fillForColor(v.color));
+            const text = document.createElementNS(SVG_NS, "text");
+            text.setAttribute("x", String(v.x));
+            text.setAttribute("y", String(v.y + 1));
+            text.textContent = v.label;
+            group.appendChild(circle);
+            group.appendChild(text);
+            group.appendChild(this.makeTitle(`Vertex ${v.label}`));
+            this.svg.appendChild(group);
+            this.nodeEls.set(v.id, group);
+          }
+        }
+
+        makeTitle(text) {
+          const title = document.createElementNS(SVG_NS, "title");
+          title.textContent = text;
+          return title;
+        }
+
+        renderEdgesOnly() {
+          for (const e of this.graph.edges.values()) {
+            const line = this.edgeEls.get(e.id);
+            if (!line) {
+              continue;
+            }
+            const u = this.graph.vertices.get(e.u);
+            const v = this.graph.vertices.get(e.v);
+            line.setAttribute("x1", String(u.x));
+            line.setAttribute("y1", String(u.y));
+            line.setAttribute("x2", String(v.x));
+            line.setAttribute("y2", String(v.y));
+          }
+        }
+
+        updateVertex(id) {
+          const node = this.nodeEls.get(id);
+          const v = this.graph.vertices.get(id);
+          if (!node || !v) {
+            return;
+          }
+          const circle = node.querySelector("circle");
+          const text = node.querySelector("text");
+          circle.setAttribute("cx", String(v.x));
+          circle.setAttribute("cy", String(v.y));
+          circle.setAttribute("fill", this.fillForColor(v.color));
+          text.setAttribute("x", String(v.x));
+          text.setAttribute("y", String(v.y + 1));
+        }
+
+        flashEdge(u, v, cls = "flash") {
+          const id = `${Math.min(u, v)}-${Math.max(u, v)}`;
+          const line = this.edgeEls.get(id);
+          if (!line) {
+            return;
+          }
+          line.classList.add(cls);
+          setTimeout(() => line.classList.remove(cls), 260);
+        }
+
+        highlightCurrentVertex(id) {
+          for (const g of this.nodeEls.values()) {
+            g.classList.remove("current");
+          }
+          if (id == null) {
+            return;
+          }
+          this.nodeEls.get(id)?.classList.add("current");
+        }
+      }
+
+      const GREEDY_CODE = [
+        "GREEDY-COLOR(G, order):",
+        "1. for each v in V(G):",
+        "2.   v.color <- null",
+        "3. for each v in order:",
+        "4.   used <- {}",
+        "5.   for each u in Neighbors(v):",
+        "6.     if u.color != null: used <- used U {u.color}",
+        "7.   c <- smallest integer not in used",
+        "8.   v.color <- c",
+        "9. return max(v.color)+1"
+      ];
+
+      const BACKTRACK_CODE = [
+        "BACKTRACK-COLOR(G, k):",
+        "1. return COLOR-VERTEX(G, 0, k)",
+        "",
+        "COLOR-VERTEX(G, i, k):",
+        "3. if i = |V|: return true",
+        "4. for c in 0..k-1:",
+        "5.   if SAFE(i, c):",
+        "6.     color(i) <- c",
+        "7.     if recurse(i+1): return true",
+        "8.     color(i) <- null",
+        "9. return false"
+      ];
+
+      function escapeHtml(text) {
+        return text
+          .replaceAll("&", "&amp;")
+          .replaceAll("<", "&lt;")
+          .replaceAll(">", "&gt;");
+      }
+
+      function renderPseudocode(pre, lines, activeLine = null) {
+        pre.innerHTML = lines
+          .map((line, idx) => {
+            const n = idx + 1;
+            const cls = activeLine === n ? "line active" : "line";
+            return `<code class="${cls}" data-line="${n}">${escapeHtml(line)}</code>`;
+          })
+          .join("\n");
+      }
+
+      function makeCounterSnapshot(partial = {}) {
+        return {
+          verticesColored: partial.verticesColored ?? 0,
+          edgesChecked: partial.edgesChecked ?? 0,
+          backtracks: partial.backtracks ?? 0,
+          colorsUsed: partial.colorsUsed ?? 0,
+          operations: partial.operations ?? 0
+        };
+      }
+
+      function createFrame(emit, counters, frame) {
+        const nextOp = counters.operations + 1;
+        const next = {
+          t: counters.operations,
+          kind: frame.kind,
+          payload: frame.payload || {},
+          pseudoLine: frame.pseudoLine || null,
+          explanation: frame.explanation || "",
+          counters: makeCounterSnapshot({ ...counters, operations: nextOp })
+        };
+        counters.operations = nextOp;
+        emit(next);
+      }
+
+      function vertexTieBreak(a, b) {
+        const byLabel = String(a.label).localeCompare(String(b.label), undefined, { numeric: true });
+        if (byLabel !== 0) {
+          return byLabel;
+        }
+        return a.id - b.id;
+      }
+
+      function orderedVertices(graph, ordering) {
+        const vs = [...graph.vertices.values()];
+        if (ordering === "welsh-powell") {
+          return vs.sort((a, b) => graph.degree(b.id) - graph.degree(a.id) || vertexTieBreak(a, b));
+        }
+        if (ordering === "reverse-degree") {
+          return vs.sort((a, b) => graph.degree(a.id) - graph.degree(b.id) || vertexTieBreak(a, b));
+        }
+        if (ordering === "random") {
+          const arr = [...vs];
+          for (let i = arr.length - 1; i > 0; i -= 1) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [arr[i], arr[j]] = [arr[j], arr[i]];
+          }
+          return arr;
+        }
+        return vs.sort((a, b) => a.id - b.id);
+      }
+
+      function greedyColorDirect(graph, ordering = "natural") {
+        graph.resetColors();
+        const sequence = orderedVertices(graph, ordering);
+        sequence.forEach((v) => {
+          const baseLabel = v.meta.baseLabel || String(v.label).replace(/\s+\[\d+\]$/, "");
+          v.meta.baseLabel = baseLabel;
+          v.label = baseLabel;
+          const used = new Set();
+          for (const nId of graph.neighbors(v.id)) {
+            const n = graph.vertices.get(nId);
+            if (n.color !== null) {
+              used.add(n.color);
+            }
+          }
+          let color = 0;
+          while (used.has(color)) {
+            color += 1;
+          }
+          v.color = color;
+        });
+        const colorsUsed = sequence.reduce((mx, v) => Math.max(mx, (v.color ?? -1) + 1), 0);
+        return { colorsUsed, order: sequence.map((v) => v.meta.baseLabel || v.label) };
+      }
+
+      function buildGreedyFrames(graph, ordering = "natural") {
+        const frames = [];
+        const emit = (frame) => frames.push(frame);
+        const counters = makeCounterSnapshot();
+
+        for (const v of graph.vertices.values()) {
+          v.color = null;
+        }
+        createFrame(emit, counters, {
+          kind: "pseudocode-line",
+          pseudoLine: 2,
+          explanation: "Reset all vertex colors."
+        });
+
+        const sequence = orderedVertices(graph, ordering);
+        createFrame(emit, counters, {
+          kind: "note",
+          pseudoLine: 3,
+          explanation: `Order: ${sequence.map((v) => v.label).join(", ")}`
+        });
+
+        for (const v of sequence) {
+          createFrame(emit, counters, {
+            kind: "pseudocode-line",
+            pseudoLine: 4,
+            payload: { vertex: v.id },
+            explanation: `Considering ${v.label}`
+          });
+
+          const used = new Set();
+          for (const uId of graph.neighbors(v.id)) {
+            counters.edgesChecked += 1;
+            createFrame(emit, counters, {
+              kind: "check-edge",
+              pseudoLine: 6,
+              payload: { u: v.id, v: uId },
+              explanation: `Inspect edge ${v.label}-${graph.vertices.get(uId).label}`
+            });
+            const u = graph.vertices.get(uId);
+            if (u.color !== null) {
+              used.add(u.color);
+            }
+          }
+
+          let c = 0;
+          while (used.has(c)) {
+            c += 1;
+          }
+          v.color = c;
+          counters.verticesColored += 1;
+          counters.colorsUsed = Math.max(counters.colorsUsed, c + 1);
+          createFrame(emit, counters, {
+            kind: "set-color",
+            pseudoLine: 8,
+            payload: { vertex: v.id, color: c },
+            explanation: `Assign color ${c} to ${v.label} (used: {${[...used].join(", ")}}).`
+          });
+        }
+
+        createFrame(emit, counters, {
+          kind: "status",
+          pseudoLine: 9,
+          explanation: `Greedy finished with ${counters.colorsUsed} colors.`
+        });
+        return frames;
+      }
+
+      function buildBacktrackingFrames(graph, k = 3, options = {}) {
+        const frames = [];
+        const emit = (frame) => frames.push(frame);
+        const counters = makeCounterSnapshot();
+        const maxOperations = options.maxOperations ?? 120000;
+        let aborted = false;
+        const order = [...graph.vertices.values()].sort((a, b) => b.id - a.id).reverse();
+
+        for (const v of graph.vertices.values()) {
+          v.color = null;
+        }
+        createFrame(emit, counters, {
+          kind: "pseudocode-line",
+          pseudoLine: 1,
+          explanation: `Run backtracking with k = ${k}.`
+        });
+
+        function isSafe(vertex, color) {
+          if (counters.operations >= maxOperations) {
+            aborted = true;
+            return false;
+          }
+          for (const nId of graph.neighbors(vertex.id)) {
+            counters.edgesChecked += 1;
+            createFrame(emit, counters, {
+              kind: "check-edge",
+              pseudoLine: 7,
+              payload: { u: vertex.id, v: nId },
+              explanation: `Check if ${vertex.label} can use color ${color}.`
+            });
+            const neighbor = graph.vertices.get(nId);
+            if (neighbor.color === color) {
+              createFrame(emit, counters, {
+                kind: "conflict",
+                pseudoLine: 7,
+                payload: { u: vertex.id, v: nId },
+                explanation: `Conflict with ${neighbor.label}; color ${color} rejected.`
+              });
+              return false;
+            }
+          }
+          return true;
+        }
+
+        function dfs(i, depth) {
+          if (aborted || counters.operations >= maxOperations) {
+            aborted = true;
+            return false;
+          }
+          createFrame(emit, counters, {
+            kind: "enter-recursion",
+            pseudoLine: 4,
+            payload: { depth, index: i },
+            explanation: `Enter depth ${depth}, index ${i}.`
+          });
+
+          if (i === order.length) {
+            createFrame(emit, counters, {
+              kind: "status",
+              pseudoLine: 5,
+              explanation: "All vertices colored successfully."
+            });
+            createFrame(emit, counters, {
+              kind: "exit-recursion",
+              pseudoLine: 5,
+              payload: { depth, index: i },
+              explanation: `Exit depth ${depth}.`
+            });
+            return true;
+          }
+
+          const v = order[i];
+          for (let c = 0; c < k; c += 1) {
+            createFrame(emit, counters, {
+              kind: "note",
+              pseudoLine: 6,
+              payload: { vertex: v.id, color: c },
+              explanation: `Try color ${c} on ${v.label}.`
+            });
+            if (!isSafe(v, c)) {
+              continue;
+            }
+            v.color = c;
+            counters.verticesColored += 1;
+            counters.colorsUsed = Math.max(counters.colorsUsed, c + 1);
+            createFrame(emit, counters, {
+              kind: "set-color",
+              pseudoLine: 8,
+              payload: { vertex: v.id, color: c },
+              explanation: `Set ${v.label} to color ${c}.`
+            });
+
+            if (dfs(i + 1, depth + 1)) {
+              createFrame(emit, counters, {
+                kind: "exit-recursion",
+                pseudoLine: 9,
+                payload: { depth, index: i },
+                explanation: `Solution path confirmed at depth ${depth}.`
+              });
+              return true;
+            }
+
+            v.color = null;
+            counters.verticesColored -= 1;
+            counters.backtracks += 1;
+            createFrame(emit, counters, {
+              kind: "unset-color",
+              pseudoLine: 9,
+              payload: { vertex: v.id },
+              explanation: `Backtrack on ${v.label}.`
+            });
+          }
+
+          createFrame(emit, counters, {
+            kind: "exit-recursion",
+            pseudoLine: 10,
+            payload: { depth, index: i },
+            explanation: `No valid color at depth ${depth}; return false.`
+          });
+          return false;
+        }
+
+        const ok = dfs(0, 0);
+        if (aborted) {
+          createFrame(emit, counters, {
+            kind: "status",
+            pseudoLine: 2,
+            explanation: `Backtracking stopped after ${maxOperations} operations (safety cap).`
+          });
+          return frames;
+        }
+        if (!ok) {
+          createFrame(emit, counters, {
+            kind: "status",
+            pseudoLine: 2,
+            explanation: "Backtracking failed; graph is not 3-colorable."
+          });
+        }
+        return frames;
+      }
+
+      class StepMachine {
+        constructor({ graph, renderer, onSync, onStatus }) {
+          this.baseGraph = graph.clone();
+          this.graph = graph.clone();
+          this.renderer = renderer;
+          this.frames = [];
+          this.t = 0;
+          this.timer = null;
+          this.onSync = onSync || (() => {});
+          this.onStatus = onStatus || (() => {});
+          this.renderer.setGraph(this.graph);
+        }
+
+        setGraph(graph) {
+          this.pause();
+          this.baseGraph = graph.clone();
+          this.graph = graph.clone();
+          this.frames = [];
+          this.t = 0;
+          this.renderer.setGraph(this.graph);
+          this.onSync({
+            frame: null,
+            t: this.t,
+            total: this.frames.length,
+            counters: makeCounterSnapshot()
+          });
+        }
+
+        build(buildFn) {
+          this.pause();
+          this.onStatus("Building...");
+          const sandbox = this.baseGraph.clone();
+          this.frames = buildFn(sandbox);
+          this.t = 0;
+          this.graph = this.baseGraph.clone();
+          this.renderer.setGraph(this.graph);
+          this.onSync({
+            frame: null,
+            t: this.t,
+            total: this.frames.length,
+            counters: makeCounterSnapshot()
+          });
+          this.onStatus(this.frames.length ? "Paused" : "Idle");
+        }
+
+        frameDelay() {
+          const speed = Number(document.getElementById("global-speed").value);
+          return Math.max(50, 800 - speed * 75);
+        }
+
+        applyFrame(frame) {
+          if (!frame) {
+            return;
+          }
+          const payload = frame.payload || {};
+          if (frame.kind === "set-color") {
+            const v = this.graph.vertices.get(payload.vertex);
+            if (v) {
+              v.color = payload.color;
+              this.renderer.updateVertex(v.id);
+            }
+            this.renderer.highlightCurrentVertex(payload.vertex);
+          } else if (frame.kind === "unset-color") {
+            const v = this.graph.vertices.get(payload.vertex);
+            if (v) {
+              v.color = null;
+              this.renderer.updateVertex(v.id);
+            }
+            this.renderer.highlightCurrentVertex(payload.vertex);
+          } else if (frame.kind === "check-edge" || frame.kind === "conflict") {
+            this.renderer.flashEdge(payload.u, payload.v, frame.kind === "conflict" ? "flash" : "flash");
+            this.renderer.highlightCurrentVertex(payload.u);
+          } else if (frame.kind === "pseudocode-line" || frame.kind === "note") {
+            if (payload.vertex !== undefined) {
+              this.renderer.highlightCurrentVertex(payload.vertex);
+            }
+          }
+        }
+
+        step() {
+          if (this.t >= this.frames.length) {
+            this.pause();
+            this.onStatus("Done");
+            return false;
+          }
+          const frame = this.frames[this.t];
+          this.applyFrame(frame);
+          this.t += 1;
+          this.onSync({
+            frame,
+            t: this.t,
+            total: this.frames.length,
+            counters: frame.counters || makeCounterSnapshot()
+          });
+          if (this.t >= this.frames.length) {
+            this.pause();
+            this.onStatus("Done");
+          }
+          return true;
+        }
+
+        pause() {
+          if (this.timer) {
+            clearInterval(this.timer);
+            this.timer = null;
+          }
+        }
+
+        play() {
+          if (!this.frames.length || this.timer) {
+            return;
+          }
+          this.onStatus("Running");
+          this.timer = setInterval(() => {
+            this.step();
+          }, this.frameDelay());
+        }
+
+        goTo(step) {
+          this.pause();
+          this.graph = this.baseGraph.clone();
+          this.renderer.setGraph(this.graph);
+          this.t = 0;
+          while (this.t < step && this.t < this.frames.length) {
+            this.applyFrame(this.frames[this.t]);
+            this.t += 1;
+          }
+          const frame = this.frames[this.t - 1] || null;
+          this.onSync({
+            frame,
+            t: this.t,
+            total: this.frames.length,
+            counters: frame?.counters || makeCounterSnapshot()
+          });
+        }
+
+        stepBack() {
+          if (this.t <= 0) {
+            return;
+          }
+          this.goTo(this.t - 1);
+          this.onStatus("Paused");
+        }
+
+        reset() {
+          this.pause();
+          this.graph = this.baseGraph.clone();
+          this.renderer.setGraph(this.graph);
+          this.t = 0;
+          this.onSync({
+            frame: null,
+            t: this.t,
+            total: this.frames.length,
+            counters: makeCounterSnapshot()
+          });
+          this.onStatus("Idle");
+        }
+      }
+
+      function makeComplete(n) {
+        const g = new Graph();
+        for (let i = 0; i < n; i += 1) {
+          g.addVertex({ x: 0, y: 0, label: `v${i}` });
+        }
+        for (let i = 0; i < n; i += 1) {
+          for (let j = i + 1; j < n; j += 1) {
+            g.addEdge(i, j);
+          }
+        }
+        return g;
+      }
+
+      function makeCycle(n) {
+        const g = new Graph();
+        for (let i = 0; i < n; i += 1) {
+          g.addVertex({ x: 0, y: 0, label: `v${i}` });
+        }
+        for (let i = 0; i < n; i += 1) {
+          g.addEdge(i, (i + 1) % n);
+        }
+        return g;
+      }
+
+      function makeBipartite(a, b) {
+        const g = new Graph();
+        for (let i = 0; i < a + b; i += 1) {
+          g.addVertex({ x: 0, y: 0, label: i < a ? `a${i + 1}` : `b${i - a + 1}` });
+        }
+        for (let i = 0; i < a; i += 1) {
+          for (let j = 0; j < b; j += 1) {
+            g.addEdge(i, a + j);
+          }
+        }
+        return g;
+      }
+
+      function makeCrown(n, options = {}) {
+        const g = new Graph();
+        const half = n / 2;
+        const interleaved = options.interleaved === true;
+        const aIds = [];
+        const bIds = [];
+        if (interleaved) {
+          for (let i = 0; i < half; i += 1) {
+            aIds.push(g.addVertex({ x: 0, y: 0, label: `a${i + 1}` }));
+            bIds.push(g.addVertex({ x: 0, y: 0, label: `b${i + 1}` }));
+          }
+        } else {
+          for (let i = 0; i < half; i += 1) {
+            aIds.push(g.addVertex({ x: 0, y: 0, label: `a${i + 1}` }));
+          }
+          for (let i = 0; i < half; i += 1) {
+            bIds.push(g.addVertex({ x: 0, y: 0, label: `b${i + 1}` }));
+          }
+        }
+        for (let i = 0; i < half; i += 1) {
+          for (let j = 0; j < half; j += 1) {
+            if (i !== j) {
+              g.addEdge(aIds[i], bIds[j]);
+            }
+          }
+        }
+        return g;
+      }
+
+      function makePetersen() {
+        const g = new Graph();
+        for (let i = 0; i < 10; i += 1) {
+          g.addVertex({ x: 0, y: 0, label: `v${i}` });
+        }
+        for (let i = 0; i < 5; i += 1) {
+          g.addEdge(i, (i + 1) % 5);
+          g.addEdge(i + 5, ((i + 2) % 5) + 5);
+          g.addEdge(i, i + 5);
+        }
+        return g;
+      }
+
+      function makePlanarLike() {
+        const g = new Graph();
+        const names = ["A", "B", "C", "D", "E", "F", "G", "H"];
+        for (const name of names) {
+          g.addVertex({ x: 0, y: 0, label: name });
+        }
+        const edges = [
+          [0, 1],
+          [1, 2],
+          [2, 3],
+          [3, 0],
+          [0, 4],
+          [1, 5],
+          [2, 6],
+          [3, 7],
+          [4, 5],
+          [5, 6],
+          [6, 7],
+          [7, 4],
+          [4, 6],
+          [5, 7]
+        ];
+        edges.forEach(([u, v]) => g.addEdge(u, v));
+        return g;
+      }
+
+      function makeRandomGraph(n, p = 0.35) {
+        const g = new Graph();
+        for (let i = 0; i < n; i += 1) {
+          g.addVertex({ x: 0, y: 0, label: `v${i}` });
+        }
+        for (let i = 0; i < n; i += 1) {
+          for (let j = i + 1; j < n; j += 1) {
+            if (Math.random() < p) {
+              g.addEdge(i, j);
+            }
+          }
+        }
+        return g;
+      }
+
+      function makeReductionExample() {
+        const parsed = parse3CNFFormula("(x1 v x2 v -x3) ^ (-x1 v x2 v x3)");
+        const g = new Graph();
+        const t = g.addVertex({ x: 240, y: 70, label: "T", fixed: true });
+        const f = g.addVertex({ x: 360, y: 70, label: "F", fixed: true });
+        const b = g.addVertex({ x: 300, y: 150, label: "B", fixed: true });
+        g.addEdge(t, f);
+        g.addEdge(f, b);
+        g.addEdge(t, b);
+        const literal = new Map();
+        parsed.variables.forEach((name, i) => {
+          const x = 120 + i * 140;
+          const p = g.addVertex({ x, y: 250, label: name });
+          const n = g.addVertex({ x, y: 330, label: `¬${name}` });
+          g.addEdge(p, n);
+          g.addEdge(p, b);
+          g.addEdge(n, b);
+          literal.set(name, p);
+          literal.set(`-${name}`, n);
+        });
+        parsed.clauses.forEach((clause, i) => {
+          const x = 90 + i * 220;
+          const prefix = `c${i + 1}`;
+          const vx = g.addVertex({ x, y: 420, label: `${prefix}.x` });
+          const vy = g.addVertex({ x: x + 45, y: 450, label: `${prefix}.y` });
+          const vz = g.addVertex({ x: x + 90, y: 420, label: `${prefix}.z` });
+          const vm = g.addVertex({ x: x + 15, y: 380, label: `${prefix}.m` });
+          const vn = g.addVertex({ x: x + 70, y: 380, label: `${prefix}.n` });
+          const vo = g.addVertex({ x: x + 115, y: 380, label: `${prefix}.o` });
+          const l0 = literal.get(`${clause[0].negated ? "-" : ""}${clause[0].variable}`);
+          const l1 = literal.get(`${clause[1].negated ? "-" : ""}${clause[1].variable}`);
+          const l2 = literal.get(`${clause[2].negated ? "-" : ""}${clause[2].variable}`);
+          g.addEdge(l0, vx);
+          g.addEdge(l1, vy);
+          g.addEdge(l2, vz);
+          g.addEdge(vx, vy);
+          g.addEdge(vx, vm);
+          g.addEdge(vy, vm);
+          g.addEdge(vm, vn);
+          g.addEdge(vn, vz);
+          g.addEdge(vn, vo);
+          g.addEdge(vz, vo);
+          g.addEdge(vo, f);
+        });
+        return g;
+      }
+
+      const PRESETS = {
+        K3: () => makeComplete(3),
+        K4: () => makeComplete(4),
+        C5: () => makeCycle(5),
+        C6: () => makeCycle(6),
+        Petersen: () => makePetersen(),
+        "Bipartite K3,3": () => makeBipartite(3, 3),
+        "Crown S8": () => makeCrown(8, { interleaved: true }),
+        "Map (USA-like)": () => makePlanarLike(),
+        "Reduction example": () => makeReductionExample()
+      };
+
+      function createMetricGrid(target, stats) {
+        target.innerHTML = "";
+        const entries = Object.entries(stats);
+        for (const [k, v] of entries) {
+          const d = document.createElement("div");
+          d.className = "metric";
+          d.innerHTML = `<span class="metric-label">${k}</span><br><span class="metric-value">${v}</span>`;
+          target.appendChild(d);
+        }
+      }
+
+      function chartClear(svg) {
+        svg.innerHTML = "";
+      }
+
+      function drawChart(svg, series) {
+        const W = 600;
+        const H = 300;
+        const pad = { l: 55, r: 20, t: 20, b: 42 };
+        chartClear(svg);
+        if (!series.length || !series.every((s) => s.points.length)) {
+          const hint = document.createElementNS(SVG_NS, "text");
+          hint.setAttribute("x", String(W / 2));
+          hint.setAttribute("y", String(H / 2));
+          hint.setAttribute("text-anchor", "middle");
+          hint.setAttribute("fill", "var(--text-dim)");
+          hint.setAttribute("font-size", "14");
+          hint.textContent = "Click Build & Run Both to begin";
+          svg.appendChild(hint);
+          return;
+        }
+        const xs = series.flatMap((s) => s.points.map((p) => p.x));
+        const ys = series.flatMap((s) => s.points.map((p) => p.y));
+        const xMin = Math.min(...xs);
+        const xMax = Math.max(...xs);
+        const yMin = Math.max(1, Math.min(...ys));
+        const yMax = Math.max(...ys, 1);
+        const useLog = yMax / yMin > 100;
+        const yProject = (y) => (useLog ? Math.log10(Math.max(1, y)) : y);
+        const yTop = yProject(yMax);
+        const yBottom = yProject(useLog ? yMin : 0);
+        const sx = (x) => pad.l + ((x - xMin) / Math.max(1, xMax - xMin)) * (W - pad.l - pad.r);
+        const sy = (y) => H - pad.b - ((yProject(y) - yBottom) / Math.max(0.0001, yTop - yBottom)) * (H - pad.t - pad.b);
+
+        function makeEl(tag, attrs = {}, text = "") {
+          const el = document.createElementNS(SVG_NS, tag);
+          Object.entries(attrs).forEach(([k, v]) => el.setAttribute(k, String(v)));
+          if (text) {
+            el.textContent = text;
+          }
+          return el;
+        }
+
+        svg.appendChild(
+          makeEl("line", {
+            x1: pad.l,
+            y1: H - pad.b,
+            x2: W - pad.r,
+            y2: H - pad.b,
+            stroke: "#8b949e",
+            "stroke-width": 1
+          })
+        );
+        svg.appendChild(
+          makeEl("line", {
+            x1: pad.l,
+            y1: pad.t,
+            x2: pad.l,
+            y2: H - pad.b,
+            stroke: "#8b949e",
+            "stroke-width": 1
+          })
+        );
+
+        const xTicks = [...new Set(xs)].sort((a, b) => a - b);
+        xTicks.forEach((x) => {
+          const px = sx(x);
+          svg.appendChild(
+            makeEl("line", {
+              x1: px,
+              y1: H - pad.b,
+              x2: px,
+              y2: H - pad.b + 5,
+              stroke: "#8b949e",
+              "stroke-width": 1
+            })
+          );
+          svg.appendChild(
+            makeEl(
+              "text",
+              { x: px, y: H - pad.b + 18, fill: "#8b949e", "font-size": 11, "text-anchor": "middle" },
+              String(x)
+            )
+          );
+        });
+
+        const yTickValues = useLog
+          ? [1, 10, 100, 1000, 10000, 100000, 1000000].filter((v) => v <= yMax * 1.2)
+          : Array.from({ length: 5 }, (_, i) => Math.round((yMax / 4) * i));
+        yTickValues.forEach((y) => {
+          const py = sy(y);
+          svg.appendChild(
+            makeEl("line", {
+              x1: pad.l - 4,
+              y1: py,
+              x2: pad.l,
+              y2: py,
+              stroke: "#8b949e",
+              "stroke-width": 1
+            })
+          );
+          svg.appendChild(
+            makeEl(
+              "text",
+              { x: pad.l - 7, y: py + 4, fill: "#8b949e", "font-size": 11, "text-anchor": "end" },
+              String(y)
+            )
+          );
+        });
+
+        svg.appendChild(
+          makeEl(
+            "text",
+            { x: W / 2, y: H - 10, fill: "#8b949e", "font-size": 12, "text-anchor": "middle" },
+            "n (vertices)"
+          )
+        );
+        svg.appendChild(
+          makeEl(
+            "text",
+            { x: 16, y: H / 2, fill: "#8b949e", "font-size": 12, transform: `rotate(-90 16 ${H / 2})`, "text-anchor": "middle" },
+            useLog ? "Operations (log10 scale)" : "Operations"
+          )
+        );
+
+        series.forEach((s, idx) => {
+          const points = s.points.map((p) => `${sx(p.x)},${sy(p.y)}`).join(" ");
+          svg.appendChild(
+            makeEl("polyline", {
+              points,
+              fill: "none",
+              stroke: s.color,
+              "stroke-width": 2.5
+            })
+          );
+          s.points.forEach((p) => {
+            svg.appendChild(
+              makeEl("circle", {
+                cx: sx(p.x),
+                cy: sy(p.y),
+                r: 3.2,
+                fill: s.color
+              })
+            );
+          });
+          svg.appendChild(
+            makeEl(
+              "text",
+              { x: W - pad.r - 120, y: pad.t + 15 + idx * 16, fill: s.color, "font-size": 12 },
+              s.label
+            )
+          );
+        });
+      }
+
+      function setStatus(text) {
+        const el = document.getElementById("global-status");
+        el.textContent = text;
+        el.classList.remove("status-idle", "status-running", "status-done", "status-error", "status-building");
+        const normalized = String(text).toLowerCase();
+        if (normalized.includes("running")) {
+          el.classList.add("status-running");
+          return;
+        }
+        if (normalized.includes("done") || normalized.includes("accept")) {
+          el.classList.add("status-done");
+          return;
+        }
+        if (normalized.includes("building")) {
+          el.classList.add("status-building");
+          return;
+        }
+        if (
+          normalized.includes("conflict") ||
+          normalized.includes("error") ||
+          normalized.includes("reject") ||
+          normalized.includes("unsatisfied")
+        ) {
+          el.classList.add("status-error");
+          return;
+        }
+        el.classList.add("status-idle");
+      }
+
+      function setStepCounter(t, n) {
+        document.getElementById("global-step").textContent = `${t}/${n}`;
+      }
+
+      function switchTabs() {
+        const buttons = [...document.querySelectorAll(".tab-btn")];
+        const panels = {
+          playground: document.getElementById("tab-playground"),
+          algorithms: document.getElementById("tab-algorithms"),
+          design: document.getElementById("tab-design"),
+          np: document.getElementById("tab-np")
+        };
+        for (const button of buttons) {
+          button.addEventListener("click", () => {
+            for (const b of buttons) {
+              b.classList.remove("active");
+              b.setAttribute("aria-selected", "false");
+            }
+            button.classList.add("active");
+            button.setAttribute("aria-selected", "true");
+            for (const p of Object.values(panels)) {
+              p.classList.remove("active");
+            }
+            panels[button.dataset.tab].classList.add("active");
+          });
+        }
+      }
+
+      const playground = {
+        sourceGraph: PRESETS.Petersen(),
+        renderer: null,
+        machine: null,
+        counters: makeCounterSnapshot()
+      };
+
+      const algorithmsTab = {
+        sourceGraph: PRESETS.K3(),
+        greedyRenderer: null,
+        backRenderer: null,
+        greedyMachine: null,
+        backMachine: null,
+        timer: null,
+        timings: { greedyMs: 0, backMs: 0 }
+      };
+
+      const npState = {
+        verifyGraph: PRESETS.K3(),
+        verifyRenderer: null,
+        reductionGraph: new Graph(),
+        reductionRenderer: null,
+        reductionMeta: null
+      };
+
+      const designTab = {
+        baseGraph: PRESETS["Crown S8"](),
+        renderer: null
+      };
+
+      function populatePresetSelect(selectEl) {
+        selectEl.innerHTML = Object.keys(PRESETS)
+          .map((name) => `<option value="${name}">${name}</option>`)
+          .join("");
+      }
+
+      function playgroundCodeLines() {
+        return document.getElementById("pg-algorithm").value === "backtracking" ? BACKTRACK_CODE : GREEDY_CODE;
+      }
+
+      function updatePlaygroundButtons() {
+        const machine = playground.machine;
+        if (!machine) {
+          return;
+        }
+        const hasFrames = machine.frames.length > 0;
+        const hasNext = machine.t < machine.frames.length;
+        const isPlaying = Boolean(machine.timer);
+        const isGraphEmpty = machine.graph.vertices.size === 0;
+        document.getElementById("pg-build").disabled = isPlaying || isGraphEmpty;
+        document.getElementById("pg-step").disabled = !hasFrames || !hasNext || isPlaying;
+        document.getElementById("pg-play").disabled = !hasFrames || !hasNext || isPlaying;
+        document.getElementById("pg-pause").disabled = !isPlaying;
+        document.getElementById("pg-back").disabled = machine.t <= 0 || isPlaying;
+      }
+
+      function syncPlaygroundFrame({ frame, t, total, counters }) {
+        playground.counters = counters || makeCounterSnapshot();
+        setStepCounter(t, total);
+        const algorithm = document.getElementById("pg-algorithm").value;
+        renderPseudocode(
+          document.getElementById("pg-pseudocode"),
+          playgroundCodeLines(),
+          frame?.pseudoLine || null
+        );
+        document.getElementById("pg-explanation").textContent =
+          frame?.explanation || "Build steps to start animation.";
+        createMetricGrid(document.getElementById("pg-counters"), {
+          "Vertices colored": `${playground.counters.verticesColored}/${playground.machine.graph.vertices.size}`,
+          "Edges checked": playground.counters.edgesChecked,
+          "Backtracks": playground.counters.backtracks,
+          "Colors used": playground.counters.colorsUsed,
+          "Operations": playground.counters.operations,
+          "Frame": `${t}/${total}`
+        });
+        updatePlaygroundButtons();
+      }
+
+      function buildPlaygroundFrames(graph) {
+        const algorithm = document.getElementById("pg-algorithm").value;
+        const ordering = document.getElementById("pg-ordering").value;
+        if (algorithm === "backtracking") {
+          return buildBacktrackingFrames(graph, 3);
+        }
+        return buildGreedyFrames(graph, ordering);
+      }
+
+      function initPlaygroundScaffold() {
+        const presetSel = document.getElementById("pg-preset");
+        populatePresetSelect(presetSel);
+        presetSel.value = "Petersen";
+
+        const svg = document.getElementById("pg-svg");
+        playground.renderer = new GraphRenderer(svg, playground.sourceGraph.clone());
+        playground.renderer.setLayout("circle");
+        playground.machine = new StepMachine({
+          graph: playground.renderer.graph,
+          renderer: playground.renderer,
+          onSync: syncPlaygroundFrame,
+          onStatus: setStatus
+        });
+        playground.machine.reset();
+
+        document.getElementById("pg-layout").addEventListener("change", (e) => {
+          playground.renderer.setLayout(e.target.value);
+        });
+
+        document.getElementById("pg-edit-mode").addEventListener("change", (e) => {
+          playground.renderer.enableEditing(e.target.checked);
+          syncPlaygroundFrame({
+            frame: null,
+            t: playground.machine.t,
+            total: playground.machine.frames.length,
+            counters: playground.counters
+          });
+        });
+
+        presetSel.addEventListener("change", (e) => {
+          const nextGraph = PRESETS[e.target.value]();
+          playground.machine.setGraph(nextGraph);
+          playground.renderer.setLayout("circle");
+          document.getElementById("pg-edge-list").value = playground.machine.graph.toEdgeList();
+          setStatus("Preset loaded");
+        });
+
+        document.getElementById("pg-load-edge-list").addEventListener("click", () => {
+          const text = document.getElementById("pg-edge-list").value;
+          try {
+            const nextGraph = new Graph();
+            nextGraph.fromEdgeList(text);
+            playground.machine.setGraph(nextGraph);
+            playground.renderer.setLayout("circle");
+            setStatus("Loaded edge list");
+          } catch (err) {
+            setStatus(`Parse error: ${err.message}`);
+          }
+        });
+
+        document.getElementById("pg-export-edge-list").addEventListener("click", () => {
+          document.getElementById("pg-edge-list").value = playground.machine.graph.toEdgeList();
+        });
+
+        document.getElementById("pg-build").addEventListener("click", () => {
+          playground.machine.setGraph(playground.renderer.graph.clone());
+          playground.machine.build((g) => buildPlaygroundFrames(g));
+          setStatus("Paused");
+          updatePlaygroundButtons();
+        });
+
+        document.getElementById("pg-step").addEventListener("click", () => {
+          playground.machine.step();
+        });
+
+        document.getElementById("pg-back").addEventListener("click", () => {
+          playground.machine.stepBack();
+        });
+
+        document.getElementById("pg-play").addEventListener("click", () => {
+          playground.machine.play();
+          updatePlaygroundButtons();
+        });
+
+        document.getElementById("pg-pause").addEventListener("click", () => {
+          playground.machine.pause();
+          setStatus("Paused");
+          updatePlaygroundButtons();
+        });
+
+        document.getElementById("pg-reset").addEventListener("click", () => {
+          playground.machine.reset();
+        });
+
+        document.getElementById("pg-algorithm").addEventListener("change", () => {
+          renderPseudocode(document.getElementById("pg-pseudocode"), playgroundCodeLines(), null);
+          document.getElementById("pg-explanation").textContent =
+            "Algorithm changed. Build steps to generate a new frame sequence.";
+        });
+
+        document.getElementById("pg-edge-list").value = playground.machine.graph.toEdgeList();
+        renderPseudocode(document.getElementById("pg-pseudocode"), GREEDY_CODE, null);
+        syncPlaygroundFrame({
+          frame: null,
+          t: 0,
+          total: 0,
+          counters: makeCounterSnapshot()
+        });
+      }
+
+      function getMachineCounters(machine) {
+        return machine.frames[Math.max(0, machine.t - 1)]?.counters || makeCounterSnapshot();
+      }
+
+      function stopAlgorithmsTimer() {
+        if (algorithmsTab.timer) {
+          clearInterval(algorithmsTab.timer);
+          algorithmsTab.timer = null;
+        }
+      }
+
+      function startAlgorithmsTimer() {
+        if (algorithmsTab.timer) {
+          return;
+        }
+        setStatus("Running");
+        algorithmsTab.timer = setInterval(() => {
+          const didG = algorithmsTab.greedyMachine.step();
+          const didB = algorithmsTab.backMachine.step();
+          if (!didG && !didB) {
+            stopAlgorithmsTimer();
+            setStatus("Done");
+            updateAlgorithmsButtons();
+          }
+        }, Math.max(50, 800 - Number(document.getElementById("global-speed").value) * 75));
+      }
+
+      function updateAlgorithmsButtons() {
+        const hasFrames = algorithmsTab.greedyMachine?.frames.length && algorithmsTab.backMachine?.frames.length;
+        const inFlight = Boolean(algorithmsTab.timer);
+        document.getElementById("alg-build-run").disabled = inFlight;
+        document.getElementById("alg-pause").disabled = !inFlight;
+        document.getElementById("alg-reset").disabled = !hasFrames && !inFlight;
+      }
+
+      function syncAlgorithmsMetrics(frame = null, source = "greedy") {
+        const gCounters = getMachineCounters(algorithmsTab.greedyMachine);
+        const bCounters = getMachineCounters(algorithmsTab.backMachine);
+        createMetricGrid(document.getElementById("alg-greedy-metrics"), {
+          "Colors used": gCounters.colorsUsed,
+          Operations: gCounters.operations,
+          "Edges checked": gCounters.edgesChecked,
+          "Wall time": `${algorithmsTab.timings.greedyMs.toFixed(2)} ms`
+        });
+        createMetricGrid(document.getElementById("alg-back-metrics"), {
+          "Colors used": bCounters.colorsUsed,
+          Operations: bCounters.operations,
+          "Edges checked": bCounters.edgesChecked,
+          "Wall time": `${algorithmsTab.timings.backMs.toFixed(2)} ms`
+        });
+        const code = source === "backtracking" ? BACKTRACK_CODE : GREEDY_CODE;
+        renderPseudocode(document.getElementById("alg-pseudocode"), code, frame?.pseudoLine || null);
+        if (frame?.explanation) {
+          document.getElementById("alg-explanation").textContent = frame.explanation;
+        }
+      }
+
+      function initAlgorithmsScaffold() {
+        const sourceSel = document.getElementById("alg-source");
+        const orderingSel = document.getElementById("alg-ordering");
+        populatePresetSelect(sourceSel);
+        sourceSel.value = "K3";
+
+        algorithmsTab.sourceGraph = PRESETS[sourceSel.value]();
+        algorithmsTab.greedyRenderer = new GraphRenderer(
+          document.getElementById("alg-greedy-svg"),
+          algorithmsTab.sourceGraph.clone()
+        );
+        algorithmsTab.backRenderer = new GraphRenderer(
+          document.getElementById("alg-back-svg"),
+          algorithmsTab.sourceGraph.clone()
+        );
+        algorithmsTab.greedyRenderer.setLayout("circle");
+        algorithmsTab.backRenderer.setLayout("circle");
+
+        algorithmsTab.greedyMachine = new StepMachine({
+          graph: algorithmsTab.greedyRenderer.graph,
+          renderer: algorithmsTab.greedyRenderer,
+          onSync: ({ frame }) => syncAlgorithmsMetrics(frame, "greedy")
+        });
+        algorithmsTab.backMachine = new StepMachine({
+          graph: algorithmsTab.backRenderer.graph,
+          renderer: algorithmsTab.backRenderer,
+          onSync: ({ frame }) => syncAlgorithmsMetrics(frame, "backtracking")
+        });
+        algorithmsTab.greedyMachine.reset();
+        algorithmsTab.backMachine.reset();
+        syncAlgorithmsMetrics();
+
+        sourceSel.addEventListener("change", (e) => {
+          stopAlgorithmsTimer();
+          algorithmsTab.sourceGraph = PRESETS[e.target.value]();
+          algorithmsTab.greedyMachine.setGraph(algorithmsTab.sourceGraph.clone());
+          algorithmsTab.backMachine.setGraph(algorithmsTab.sourceGraph.clone());
+          algorithmsTab.greedyRenderer.setLayout("circle");
+          algorithmsTab.backRenderer.setLayout("circle");
+          algorithmsTab.timings.greedyMs = 0;
+          algorithmsTab.timings.backMs = 0;
+          syncAlgorithmsMetrics();
+          updateAlgorithmsButtons();
+        });
+
+        document.getElementById("alg-build-run").addEventListener("click", () => {
+          stopAlgorithmsTimer();
+          const inputGraph = PRESETS[sourceSel.value]();
+          algorithmsTab.greedyMachine.setGraph(inputGraph.clone());
+          algorithmsTab.backMachine.setGraph(inputGraph.clone());
+
+          const order = orderingSel.value;
+          algorithmsTab.greedyMachine.build((g) => {
+            const t0 = performance.now();
+            const frames = buildGreedyFrames(g, order);
+            algorithmsTab.timings.greedyMs = performance.now() - t0;
+            return frames;
+          });
+          algorithmsTab.backMachine.build((g) => {
+            const t0 = performance.now();
+            const frames = buildBacktrackingFrames(g, 3, { maxOperations: 40000 });
+            algorithmsTab.timings.backMs = performance.now() - t0;
+            return frames;
+          });
+          algorithmsTab.greedyRenderer.setLayout("circle");
+          algorithmsTab.backRenderer.setLayout("circle");
+          syncAlgorithmsMetrics();
+          startAlgorithmsTimer();
+          updateAlgorithmsButtons();
+        });
+
+        document.getElementById("alg-pause").addEventListener("click", () => {
+          stopAlgorithmsTimer();
+          setStatus("Paused");
+          updateAlgorithmsButtons();
+        });
+
+        document.getElementById("alg-reset").addEventListener("click", () => {
+          stopAlgorithmsTimer();
+          algorithmsTab.greedyMachine.reset();
+          algorithmsTab.backMachine.reset();
+          algorithmsTab.timings.greedyMs = 0;
+          algorithmsTab.timings.backMs = 0;
+          syncAlgorithmsMetrics();
+          setStatus("Idle");
+          updateAlgorithmsButtons();
+        });
+
+        document.getElementById("alg-benchmark").addEventListener("click", () => {
+          stopAlgorithmsTimer();
+          const sizes = [4, 6, 8, 10, 12, 14, 16];
+          const greedyPoints = [];
+          const backPoints = [];
+          for (const n of sizes) {
+            const g = makeRandomGraph(n, 0.22);
+            const greedyFrames = buildGreedyFrames(g.clone(), orderingSel.value);
+            const backFrames = buildBacktrackingFrames(g.clone(), 3, { maxOperations: 20000 });
+            const greedyOps = greedyFrames[greedyFrames.length - 1]?.counters.operations || greedyFrames.length;
+            const backOps = backFrames[backFrames.length - 1]?.counters.operations || backFrames.length;
+            greedyPoints.push({ x: n, y: Math.max(1, greedyOps) });
+            backPoints.push({ x: n, y: Math.max(1, backOps) });
+          }
+          drawChart(document.getElementById("alg-chart"), [
+            { label: "Greedy", color: "#58a6ff", points: greedyPoints },
+            { label: "Backtracking", color: "#f0883e", points: backPoints }
+          ]);
+          document.getElementById("alg-explanation").textContent =
+            "Benchmark complete. Y-axis switches to log scale when growth diverges strongly.";
+          setStatus("Paused");
+          updateAlgorithmsButtons();
+        });
+
+        drawChart(document.getElementById("alg-chart"), []);
+        renderPseudocode(document.getElementById("alg-pseudocode"), GREEDY_CODE, null);
+        updateAlgorithmsButtons();
+      }
+
+      function initDesignScaffold() {
+        designTab.baseGraph = makeCrown(8, { interleaved: true });
+        for (const v of designTab.baseGraph.vertices.values()) {
+          v.meta.baseLabel = v.label;
+        }
+        designTab.renderer = new GraphRenderer(document.getElementById("design-svg"), designTab.baseGraph);
+        designTab.renderer.setLayout("circle");
+
+        const orderingSel = document.getElementById("design-ordering");
+        const explain = document.getElementById("design-explanation");
+
+        function run() {
+          const ordering = orderingSel.value;
+          const result = greedyColorDirect(designTab.baseGraph, ordering);
+          designTab.renderer.render();
+          createMetricGrid(document.getElementById("design-metrics"), {
+            "Known chi": 2,
+            "Greedy colors": result.colorsUsed,
+            Ordering: ordering,
+            "Order sequence": result.order.join(" -> ")
+          });
+          explain.textContent =
+            result.colorsUsed > 2
+              ? `Greedy used ${result.colorsUsed} colors on a bipartite graph (chi=2): ordering caused avoidable color inflation.`
+              : `Greedy matched the optimal bipartite coloring with ordering "${ordering}".`;
+        }
+
+        designTab.run = run;
+        document.getElementById("design-run-greedy").addEventListener("click", run);
+        orderingSel.addEventListener("change", run);
+        run();
+      }
+
+      function wait(ms) {
+        return new Promise((resolve) => setTimeout(resolve, ms));
+      }
+
+      function npDelay() {
+        return Math.max(80, 900 - Number(document.getElementById("global-speed").value) * 80);
+      }
+
+      function parse3CNFFormula(input) {
+        const normalized = input
+          .replaceAll("∨", " v ")
+          .replaceAll("∧", " ^ ")
+          .replaceAll("¬", "-")
+          .replace(/\s+/g, " ")
+          .trim();
+        if (!normalized) {
+          throw new Error("Formula is empty.");
+        }
+
+        const clauses = [];
+        const clauseMatches = [...normalized.matchAll(/\(([^()]+)\)/g)];
+        if (clauseMatches.length) {
+          for (const m of clauseMatches) {
+            clauses.push(m[1]);
+          }
+        } else {
+          clauses.push(...normalized.split(/\s*\^\s*/).filter(Boolean));
+        }
+
+        const parsedClauses = [];
+        const vars = new Set();
+        for (const rawClause of clauses) {
+          const parts = rawClause.split(/\s*v\s*/i).map((x) => x.trim()).filter(Boolean);
+          if (parts.length !== 3) {
+            throw new Error(`Each clause must have exactly 3 literals: "${rawClause}"`);
+          }
+          const literals = parts.map((token) => {
+            const m = token.match(/^(-)?([A-Za-z][A-Za-z0-9_]*|x\d+)$/);
+            if (!m) {
+              throw new Error(`Invalid literal: "${token}"`);
+            }
+            const variable = m[2];
+            const negated = Boolean(m[1]);
+            vars.add(variable);
+            return { variable, negated, text: `${negated ? "-" : ""}${variable}` };
+          });
+          parsedClauses.push(literals);
+        }
+        return {
+          clauses: parsedClauses,
+          variables: [...vars].sort()
+        };
+      }
+
+      function evaluateLiteral(literal, assignment) {
+        const value = Boolean(assignment[literal.variable]);
+        return literal.negated ? !value : value;
+      }
+
+      function solveSAT(parsed) {
+        const vars = parsed.variables;
+        const assignment = {};
+
+        function clauseSatisfied(clause) {
+          return clause.some((lit) => evaluateLiteral(lit, assignment));
+        }
+
+        function partialConsistent() {
+          for (const clause of parsed.clauses) {
+            let hasUndecided = false;
+            let sat = false;
+            for (const lit of clause) {
+              if (!(lit.variable in assignment)) {
+                hasUndecided = true;
+                continue;
+              }
+              if (evaluateLiteral(lit, assignment)) {
+                sat = true;
+                break;
+              }
+            }
+            if (!sat && !hasUndecided) {
+              return false;
+            }
+          }
+          return true;
+        }
+
+        function dfs(i) {
+          if (i === vars.length) {
+            return parsed.clauses.every(clauseSatisfied);
+          }
+          const name = vars[i];
+          assignment[name] = false;
+          if (partialConsistent() && dfs(i + 1)) {
+            return true;
+          }
+          assignment[name] = true;
+          if (partialConsistent() && dfs(i + 1)) {
+            return true;
+          }
+          delete assignment[name];
+          return false;
+        }
+
+        return dfs(0) ? { ...assignment } : null;
+      }
+
+      function colorGraphWithBacktracking(graph, fixed = new Map()) {
+        const g = graph.clone();
+        for (const v of g.vertices.values()) {
+          v.color = null;
+        }
+        for (const [id, color] of fixed.entries()) {
+          const v = g.vertices.get(id);
+          if (!v) {
+            return null;
+          }
+          v.color = color;
+        }
+        for (const e of g.edges.values()) {
+          const u = g.vertices.get(e.u);
+          const v = g.vertices.get(e.v);
+          if (u.color !== null && v.color !== null && u.color === v.color) {
+            return null;
+          }
+        }
+
+        const order = [...g.vertices.values()]
+          .filter((v) => !fixed.has(v.id))
+          .sort((a, b) => g.degree(b.id) - g.degree(a.id) || a.id - b.id);
+
+        function safe(vertexId, c) {
+          for (const nId of g.neighbors(vertexId)) {
+            const n = g.vertices.get(nId);
+            if (n.color === c) {
+              return false;
+            }
+          }
+          return true;
+        }
+
+        function dfs(i) {
+          if (i === order.length) {
+            return true;
+          }
+          const v = order[i];
+          for (let c = 0; c < 3; c += 1) {
+            if (!safe(v.id, c)) {
+              continue;
+            }
+            v.color = c;
+            if (dfs(i + 1)) {
+              return true;
+            }
+            v.color = null;
+          }
+          return false;
+        }
+
+        if (!dfs(0)) {
+          return null;
+        }
+        const result = new Map();
+        for (const v of g.vertices.values()) {
+          result.set(v.id, v.color);
+        }
+        return result;
+      }
+
+      async function applyColoringAnimated(graph, renderer, coloring, explanationEl, heading) {
+        const delay = Math.max(40, npDelay() / 4);
+        for (const v of graph.vertices.values()) {
+          if (coloring.has(v.id)) {
+            v.color = coloring.get(v.id);
+            renderer.updateVertex(v.id);
+            if (explanationEl) {
+              explanationEl.textContent = `${heading}: set ${v.label} to color ${v.color}.`;
+            }
+            await wait(delay);
+          }
+        }
+      }
+
+      function literalToDisplay(literal) {
+        return `${literal.negated ? "¬" : ""}${literal.variable}`;
+      }
+
+      function clauseToDisplay(clause) {
+        return `(${clause.map((lit) => literalToDisplay(lit)).join(" ∨ ")})`;
+      }
+
+      function clearNPBanners() {
+        document.getElementById("np-forward-banner").hidden = true;
+        document.getElementById("np-backward-banner").hidden = true;
+      }
+
+      function showNPBanner(kind) {
+        clearNPBanners();
+        const id = kind === "forward" ? "np-forward-banner" : "np-backward-banner";
+        document.getElementById(id).hidden = false;
+      }
+
+      function clearReductionHighlights() {
+        if (!npState.reductionRenderer) {
+          return;
+        }
+        for (const g of npState.reductionRenderer.nodeEls.values()) {
+          g.classList.remove("current");
+        }
+      }
+
+      const OR_GADGET_CASE_ANALYSIS = [
+        {
+          a: "F",
+          b: "F",
+          c: "F",
+          colorable: false,
+          note: "no valid 3-colouring exists — contradiction on edge m–n"
+        },
+        { a: "T", b: "T", c: "T", colorable: true, x: "F", y: "B", z: "F", m: "T", n: "B", o: "T" },
+        { a: "T", b: "T", c: "F", colorable: true, x: "F", y: "B", z: "T", m: "T", n: "F", o: "B" },
+        { a: "T", b: "F", c: "T", colorable: true, x: "F", y: "T", z: "F", m: "B", n: "T", o: "B" },
+        { a: "T", b: "F", c: "F", colorable: true, x: "F", y: "T", z: "T", m: "B", n: "F", o: "B" },
+        { a: "F", b: "T", c: "T", colorable: true, x: "T", y: "F", z: "F", m: "B", n: "T", o: "B" },
+        { a: "F", b: "T", c: "F", colorable: true, x: "T", y: "F", z: "T", m: "B", n: "F", o: "B" },
+        { a: "F", b: "F", c: "T", colorable: true, x: "T", y: "B", z: "F", m: "F", n: "T", o: "B" }
+      ];
+
+      function closeClauseCasePopover() {
+        const pop = document.getElementById("np-clause-popover");
+        pop.hidden = true;
+        pop.innerHTML = "";
+      }
+
+      function openClauseCasePopover(anchorEvent, clauseMeta) {
+        const pop = document.getElementById("np-clause-popover");
+        const literals = clauseMeta?.literals || [];
+        const literalMap = [
+          `a=${literalToDisplay(literals[0]) || "?"}`,
+          `b=${literalToDisplay(literals[1]) || "?"}`,
+          `c=${literalToDisplay(literals[2]) || "?"}`
+        ].join(", ");
+
+        const rowsHtml = OR_GADGET_CASE_ANALYSIS.map((row) => {
+          if (!row.colorable) {
+            return `<tr><td>${row.a}</td><td>${row.b}</td><td>${row.c}</td><td>No</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td class="note">${row.note}</td></tr>`;
+          }
+          return `<tr><td>${row.a}</td><td>${row.b}</td><td>${row.c}</td><td>Yes</td><td>${row.x}</td><td>${row.y}</td><td>${row.z}</td><td>${row.m}</td><td>${row.n}</td><td>${row.o}</td><td class="note">valid extension</td></tr>`;
+        }).join("");
+
+        pop.innerHTML = `
+          <div class="np-case-header">
+            <div>
+              <strong>Clause ${clauseMeta.index + 1} OR-gadget case analysis</strong>
+              <div class="np-case-meta">${clauseToDisplay(literals)} · ${literalMap}</div>
+            </div>
+            <button class="np-case-close" type="button" aria-label="Close case analysis">×</button>
+          </div>
+          <table class="np-case-table">
+            <thead>
+              <tr>
+                <th>a</th><th>b</th><th>c</th><th>3-colourable?</th><th>x</th><th>y</th><th>z</th><th>m</th><th>n</th><th>o</th><th>Note</th>
+              </tr>
+            </thead>
+            <tbody>${rowsHtml}</tbody>
+          </table>
+        `;
+        pop.querySelector(".np-case-close")?.addEventListener("click", closeClauseCasePopover);
+        pop.hidden = false;
+        pop.style.left = `${anchorEvent.pageX + 12}px`;
+        pop.style.top = `${anchorEvent.pageY + 12}px`;
+        pop.style.visibility = "hidden";
+
+        const rect = pop.getBoundingClientRect();
+        const minLeft = window.scrollX + 8;
+        const minTop = window.scrollY + 8;
+        const maxLeft = window.scrollX + window.innerWidth - rect.width - 8;
+        const maxTop = window.scrollY + window.innerHeight - rect.height - 8;
+        const desiredLeft = anchorEvent.pageX + 12;
+        const desiredTop = anchorEvent.pageY + 12;
+        const left = Math.max(minLeft, Math.min(desiredLeft, Math.max(minLeft, maxLeft)));
+        const top = Math.max(minTop, Math.min(desiredTop, Math.max(minTop, maxTop)));
+        pop.style.left = `${left}px`;
+        pop.style.top = `${top}px`;
+        pop.style.visibility = "visible";
+      }
+
+      function highlightReductionVertices(ids) {
+        clearReductionHighlights();
+        if (!npState.reductionRenderer) {
+          return;
+        }
+        for (const id of ids) {
+          npState.reductionRenderer.nodeEls.get(id)?.classList.add("current");
+        }
+      }
+
+      async function buildReductionAnimated(parsed) {
+        const g = new Graph();
+        const meta = {
+          parsed,
+          palette: {},
+          variableIds: new Map(),
+          literalIds: new Map(),
+          clauses: []
+        };
+        const explain = document.getElementById("np-reduction-explanation");
+
+        npState.reductionRenderer.setGraph(g);
+        explain.textContent = "Stage 1: palette triangle (T, F, B).";
+        const tId = g.addVertex({ x: 260, y: 70, label: "T", fixed: true, meta: { gadget: "palette", role: "T" } });
+        const fId = g.addVertex({ x: 380, y: 70, label: "F", fixed: true, meta: { gadget: "palette", role: "F" } });
+        const bId = g.addVertex({ x: 320, y: 150, label: "B", fixed: true, meta: { gadget: "palette", role: "B" } });
+        g.addEdge(tId, fId);
+        g.addEdge(fId, bId);
+        g.addEdge(tId, bId);
+        meta.palette = { tId, fId, bId };
+        npState.reductionRenderer.render();
+        await wait(npDelay());
+
+        explain.textContent = "Stage 2: variable gadgets (x_i, ¬x_i) linked to B.";
+        const n = parsed.variables.length;
+        const startX = 90;
+        const gap = Math.max(105, Math.min(130, Math.floor(660 / Math.max(1, n))));
+        parsed.variables.forEach((name, i) => {
+          const x = startX + i * gap;
+          const posId = g.addVertex({
+            x,
+            y: 250,
+            label: name,
+            meta: { gadget: "variable", variable: name, literal: name, negated: false }
+          });
+          const negId = g.addVertex({
+            x,
+            y: 325,
+            label: `¬${name}`,
+            meta: { gadget: "variable", variable: name, literal: `-${name}`, negated: true }
+          });
+          g.addEdge(posId, negId);
+          g.addEdge(posId, bId);
+          g.addEdge(negId, bId);
+          meta.variableIds.set(name, { posId, negId });
+          meta.literalIds.set(name, posId);
+          meta.literalIds.set(`-${name}`, negId);
+        });
+        npState.reductionRenderer.render();
+        await wait(npDelay());
+
+        explain.textContent = "Stage 3: clause gadgets connected to literals with palette anchor o-F.";
+        const m = parsed.clauses.length;
+        const clauseStartX = 85;
+        const clauseGap = Math.max(170, Math.min(220, Math.floor(680 / Math.max(1, m))));
+        parsed.clauses.forEach((clause, i) => {
+          const cx = clauseStartX + i * clauseGap;
+          const prefix = `c${i + 1}`;
+          const vx = g.addVertex({ x: cx, y: 420, label: `${prefix}.x`, meta: { gadget: "clause", clause: i } });
+          const vy = g.addVertex({ x: cx + 45, y: 450, label: `${prefix}.y`, meta: { gadget: "clause", clause: i } });
+          const vz = g.addVertex({ x: cx + 90, y: 420, label: `${prefix}.z`, meta: { gadget: "clause", clause: i } });
+          const vm = g.addVertex({ x: cx + 15, y: 382, label: `${prefix}.m`, meta: { gadget: "clause", clause: i } });
+          const vn = g.addVertex({ x: cx + 65, y: 382, label: `${prefix}.n`, meta: { gadget: "clause", clause: i } });
+          const vo = g.addVertex({ x: cx + 115, y: 382, label: `${prefix}.o`, meta: { gadget: "clause", clause: i } });
+
+          const litIds = clause.map((lit) => meta.literalIds.get(`${lit.negated ? "-" : ""}${lit.variable}`));
+          g.addEdge(litIds[0], vx);
+          g.addEdge(litIds[1], vy);
+          g.addEdge(litIds[2], vz);
+          g.addEdge(vx, vy);
+          g.addEdge(vx, vm);
+          g.addEdge(vy, vm);
+          g.addEdge(vm, vn);
+          g.addEdge(vn, vz);
+          g.addEdge(vn, vo);
+          g.addEdge(vz, vo);
+          g.addEdge(vo, fId);
+          meta.clauses.push({ index: i, literals: clause, litIds, x: vx, y: vy, z: vz, m: vm, n: vn, o: vo });
+        });
+        npState.reductionRenderer.render();
+        await wait(npDelay());
+
+        const formulaV = 3 + 2 * n + 6 * m;
+        const formulaE = 3 + 3 * n + 11 * m;
+        document.getElementById("np-size-readout").innerHTML = [
+          `Formula: ${n} variables, ${m} clauses`,
+          `Graph (actual): |V| = ${g.vertices.size}, |E| = ${g.edges.size}`,
+          `Polynomial readout: |V| = 3 + 2n + 6m = ${formulaV}`,
+          `                    |E| = 3 + 3n + 11m = ${formulaE}`,
+          "Construction: O(n + m)  \u2713 polynomial"
+        ].join("<br>");
+        explain.textContent = "Reduction graph built. Use Forward/Backward direction controls.";
+        npState.reductionGraph = g;
+        npState.reductionMeta = meta;
+      }
+
+      function renderVerifierColorForm(graph) {
+        const form = document.getElementById("np-color-form");
+        form.innerHTML = [...graph.vertices.values()]
+          .map(
+            (v) =>
+              `<label style="display:block;margin-bottom:4px;">${v.label} <select data-vertex="${v.id}"><option value="0">Color 0</option><option value="1">Color 1</option><option value="2">Color 2</option></select></label>`
+          )
+          .join("");
+      }
+
+      function initNPScaffold() {
+        const verifyPreset = document.getElementById("np-verify-preset");
+        populatePresetSelect(verifyPreset);
+        verifyPreset.value = "K3";
+
+        npState.verifyGraph = PRESETS.K3();
+        npState.verifyRenderer = new GraphRenderer(
+          document.getElementById("np-verify-svg"),
+          npState.verifyGraph
+        );
+        npState.verifyRenderer.setLayout("circle");
+        renderVerifierColorForm(npState.verifyGraph);
+
+        npState.reductionGraph = new Graph();
+        npState.reductionRenderer = new GraphRenderer(
+          document.getElementById("np-reduction-svg"),
+          npState.reductionGraph
+        );
+        npState.reductionRenderer.render();
+        const reductionSvg = document.getElementById("np-reduction-svg");
+        reductionSvg.addEventListener("click", (event) => {
+          if (!npState.reductionMeta) {
+            return;
+          }
+          const node = event.target.closest("g.vertex");
+          if (!node) {
+            return;
+          }
+          const id = Number(node.dataset.id);
+          const clauseMeta = npState.reductionMeta.clauses.find((c) =>
+            [c.x, c.y, c.z, c.m, c.n, c.o].includes(id)
+          );
+          if (!clauseMeta) {
+            return;
+          }
+          event.preventDefault();
+          event.stopPropagation();
+          openClauseCasePopover(event, clauseMeta);
+        });
+        document.addEventListener("pointerdown", (event) => {
+          const pop = document.getElementById("np-clause-popover");
+          if (pop.hidden) {
+            return;
+          }
+          const target = event.target instanceof Element ? event.target : null;
+          if (!target) {
+            closeClauseCasePopover();
+            return;
+          }
+          if (target.closest("#np-clause-popover")) {
+            return;
+          }
+          if (target.closest("#np-reduction-svg g.vertex")) {
+            return;
+          }
+          closeClauseCasePopover();
+        });
+        document.addEventListener("keydown", (event) => {
+          if (event.key === "Escape") {
+            closeClauseCasePopover();
+          }
+        });
+
+        verifyPreset.addEventListener("change", (e) => {
+          npState.verifyGraph = PRESETS[e.target.value]();
+          npState.verifyRenderer.setGraph(npState.verifyGraph);
+          npState.verifyRenderer.setLayout("circle");
+          renderVerifierColorForm(npState.verifyGraph);
+        });
+
+        document.getElementById("np-verify").addEventListener("click", async () => {
+          const start = performance.now();
+          const selects = [...document.querySelectorAll("#np-color-form select")];
+          selects.forEach((sel) => {
+            const id = Number(sel.dataset.vertex);
+            npState.verifyGraph.vertices.get(id).color = Number(sel.value);
+          });
+          npState.verifyRenderer.render();
+          const resultEl = document.getElementById("np-verify-result");
+          resultEl.textContent = "Running verification...";
+
+          let checked = 0;
+          for (const e of npState.verifyGraph.edges.values()) {
+            checked += 1;
+            npState.verifyRenderer.flashEdge(e.u, e.v, "flash");
+            await wait(Math.max(35, npDelay() / 5));
+            const u = npState.verifyGraph.vertices.get(e.u);
+            const v = npState.verifyGraph.vertices.get(e.v);
+            if (u.color === v.color) {
+              const elapsed = performance.now() - start;
+              resultEl.textContent = `REJECT on edge (${u.label}, ${v.label}) after ${checked} checks (${elapsed.toFixed(2)} ms).`;
+              setStatus("Conflict");
+              return;
+            }
+          }
+          const elapsed = performance.now() - start;
+          resultEl.textContent = `ACCEPT. Verified ${checked} edges in ${elapsed.toFixed(2)} ms.`;
+          setStatus("Done");
+        });
+
+        document.getElementById("np-build-reduction").addEventListener("click", async () => {
+          const explain = document.getElementById("np-reduction-explanation");
+          clearNPBanners();
+          clearReductionHighlights();
+          closeClauseCasePopover();
+          try {
+            const parsed = parse3CNFFormula(document.getElementById("np-formula").value);
+            setStatus("Building...");
+            await buildReductionAnimated(parsed);
+            setStatus("Paused");
+          } catch (err) {
+            explain.textContent = `Parse/build error: ${err.message}`;
+            setStatus("Conflict");
+          }
+        });
+
+        document.getElementById("np-forward").addEventListener("click", async () => {
+          const explain = document.getElementById("np-reduction-explanation");
+          clearNPBanners();
+          clearReductionHighlights();
+          closeClauseCasePopover();
+          if (!npState.reductionMeta) {
+            explain.textContent = "Build a reduction graph first.";
+            return;
+          }
+          setStatus("Running");
+          const parsed = npState.reductionMeta.parsed;
+          const assignment = solveSAT(parsed);
+          if (!assignment) {
+            explain.textContent = "Formula appears UNSAT, so forward direction cannot show a satisfying assignment.";
+            setStatus("Conflict");
+            return;
+          }
+
+          const fixed = new Map();
+          const { tId, fId, bId } = npState.reductionMeta.palette;
+          fixed.set(tId, 0);
+          fixed.set(fId, 1);
+          fixed.set(bId, 2);
+          for (const [name, ids] of npState.reductionMeta.variableIds.entries()) {
+            if (assignment[name]) {
+              fixed.set(ids.posId, 0);
+              fixed.set(ids.negId, 1);
+            } else {
+              fixed.set(ids.posId, 1);
+              fixed.set(ids.negId, 0);
+            }
+          }
+          const coloring = colorGraphWithBacktracking(npState.reductionGraph, fixed);
+          if (!coloring) {
+            explain.textContent = "Could not extend assignment to a full 3-coloring under the gadget constraints.";
+            setStatus("Conflict");
+            return;
+          }
+
+          const delay = Math.max(40, npDelay() / 4);
+          const clausePause = Math.max(260, npDelay());
+          const setVertexColor = async (id) => {
+            const color = coloring.get(id);
+            if (color == null) {
+              return;
+            }
+            npState.reductionGraph.vertices.get(id).color = color;
+            npState.reductionRenderer.updateVertex(id);
+            await wait(delay);
+          };
+
+          explain.textContent = "Forward direction: coloring palette and variable gadgets from a satisfying assignment.";
+          for (const id of [tId, fId, bId]) {
+            await setVertexColor(id);
+          }
+          for (const [name, ids] of npState.reductionMeta.variableIds.entries()) {
+            await setVertexColor(ids.posId);
+            await setVertexColor(ids.negId);
+            explain.textContent = `Variable gadget ${name}: ${name}=${assignment[name] ? "T" : "F"}, ¬${name}=${assignment[name] ? "F" : "T"}.`;
+          }
+
+          for (const clauseMeta of npState.reductionMeta.clauses) {
+            for (const id of [clauseMeta.x, clauseMeta.y, clauseMeta.z, clauseMeta.m, clauseMeta.n, clauseMeta.o]) {
+              await setVertexColor(id);
+            }
+            const trueLiteralIds = clauseMeta.litIds.filter(
+              (id, idx) => evaluateLiteral(clauseMeta.literals[idx], assignment) && id != null
+            );
+            const clauseText = clauseToDisplay(clauseMeta.literals);
+            const witnesses = clauseMeta.literals
+              .map((lit, idx) => ({ lit, idx }))
+              .filter(({ idx }) => trueLiteralIds.includes(clauseMeta.litIds[idx]))
+              .map(({ lit }) => `${literalToDisplay(lit)}=T`);
+            if (witnesses.length) {
+              highlightReductionVertices(trueLiteralIds);
+              explain.textContent = `Clause ${clauseMeta.index + 1}: ${clauseText} is satisfied by ${witnesses.join(", ")}.`;
+            } else {
+              clearReductionHighlights();
+              explain.textContent = `Clause ${clauseMeta.index + 1}: ${clauseText} has no true literal under the assignment.`;
+            }
+            await wait(clausePause);
+          }
+
+          clearReductionHighlights();
+          explain.textContent = `Forward direction complete. Assignment ${JSON.stringify(assignment)}.`;
+          showNPBanner("forward");
+          setStatus("Done");
+        });
+
+        document.getElementById("np-backward").addEventListener("click", async () => {
+          const explain = document.getElementById("np-reduction-explanation");
+          clearNPBanners();
+          clearReductionHighlights();
+          closeClauseCasePopover();
+          if (!npState.reductionMeta) {
+            explain.textContent = "Build a reduction graph first.";
+            return;
+          }
+          setStatus("Running");
+
+          const allColored = [...npState.reductionGraph.vertices.values()].every((v) => v.color !== null);
+          if (!allColored) {
+            const coloring = colorGraphWithBacktracking(npState.reductionGraph, new Map());
+            if (!coloring) {
+              explain.textContent = "Reduction graph is not 3-colorable for this formula.";
+              setStatus("Conflict");
+              return;
+            }
+            await applyColoringAnimated(
+              npState.reductionGraph,
+              npState.reductionRenderer,
+              coloring,
+              explain,
+              "Backward prep"
+            );
+          }
+
+          const { tId, fId } = npState.reductionMeta.palette;
+          const trueColor = npState.reductionGraph.vertices.get(tId).color;
+          const falseColor = npState.reductionGraph.vertices.get(fId).color;
+          const assignment = {};
+          for (const [name, ids] of npState.reductionMeta.variableIds.entries()) {
+            const v = npState.reductionGraph.vertices.get(ids.posId);
+            assignment[name] = v.color === trueColor;
+          }
+          explain.textContent = `Backward direction read-off: assignment ${JSON.stringify(assignment)} (True color=${trueColor}, False color=${falseColor}).`;
+          await wait(Math.max(220, npDelay() / 2));
+
+          let allSat = true;
+          for (const clauseMeta of npState.reductionMeta.clauses) {
+            const trueLiteralIds = clauseMeta.litIds.filter((id) => npState.reductionGraph.vertices.get(id).color === trueColor);
+            highlightReductionVertices(trueLiteralIds);
+            const clauseText = clauseToDisplay(clauseMeta.literals);
+            const witnesses = clauseMeta.literals
+              .map((lit, idx) => ({ lit, idx }))
+              .filter(({ idx }) => trueLiteralIds.includes(clauseMeta.litIds[idx]))
+              .map(({ lit }) => `${literalToDisplay(lit)}=T`);
+            if (witnesses.length) {
+              explain.textContent = `Clause ${clauseMeta.index + 1}: ${clauseText} is satisfied by ${witnesses.join(", ")}.`;
+            } else {
+              allSat = false;
+              explain.textContent = `Clause ${clauseMeta.index + 1}: ${clauseText} is unsatisfied (no literal coloured T).`;
+            }
+            await wait(Math.max(260, npDelay()));
+          }
+
+          clearReductionHighlights();
+          if (allSat) {
+            explain.textContent = `Backward direction complete. Assignment ${JSON.stringify(assignment)} satisfies every clause.`;
+            showNPBanner("backward");
+            setStatus("Done");
+          } else {
+            explain.textContent = `Backward direction complete. Assignment ${JSON.stringify(assignment)} does not satisfy every clause.`;
+            setStatus("Conflict");
+          }
+        });
+      }
+
+      function activeTabId() {
+        return document.querySelector(".panel.active")?.id || "tab-playground";
+      }
+
+      function applyPatternModeAll(on) {
+        GraphRenderer.patternMode = on;
+        playground.renderer?.render();
+        algorithmsTab.greedyRenderer?.render();
+        algorithmsTab.backRenderer?.render();
+        designTab.renderer?.render();
+        npState.verifyRenderer?.render();
+        npState.reductionRenderer?.render();
+      }
+
+      function resetActiveTab() {
+        const tab = activeTabId();
+        if (tab === "tab-playground") {
+          playground.machine?.reset();
+        } else if (tab === "tab-algorithms") {
+          stopAlgorithmsTimer();
+          algorithmsTab.greedyMachine?.reset();
+          algorithmsTab.backMachine?.reset();
+          algorithmsTab.timings.greedyMs = 0;
+          algorithmsTab.timings.backMs = 0;
+          syncAlgorithmsMetrics();
+          updateAlgorithmsButtons();
+        } else if (tab === "tab-design") {
+          designTab.baseGraph = PRESETS["Crown S8"]();
+          for (const v of designTab.baseGraph.vertices.values()) {
+            v.meta.baseLabel = v.label;
+          }
+          designTab.renderer?.setGraph(designTab.baseGraph);
+          designTab.renderer?.setLayout("circle");
+          designTab.run?.();
+        } else if (tab === "tab-np") {
+          npState.verifyGraph.resetColors();
+          npState.verifyRenderer.render();
+          npState.reductionGraph.resetColors();
+          npState.reductionRenderer.render();
+          clearNPBanners();
+          clearReductionHighlights();
+          closeClauseCasePopover();
+          document.getElementById("np-verify-result").textContent = "Idle";
+          document.getElementById("np-reduction-explanation").textContent =
+            "Build a reduction graph from the formula to start.";
+        }
+        setStatus("Idle");
+        setStepCounter(0, 0);
+      }
+
+      function wireKeyboardShortcuts() {
+        document.addEventListener("keydown", (event) => {
+          const target = event.target;
+          if (
+            target instanceof HTMLInputElement ||
+            target instanceof HTMLTextAreaElement ||
+            target instanceof HTMLSelectElement
+          ) {
+            return;
+          }
+          const tab = activeTabId();
+          if (event.code === "Space") {
+            event.preventDefault();
+            if (tab === "tab-playground") {
+              if (playground.machine?.timer) {
+                playground.machine.pause();
+                setStatus("Paused");
+              } else {
+                playground.machine?.play();
+              }
+              updatePlaygroundButtons();
+            } else if (tab === "tab-algorithms") {
+              if (algorithmsTab.timer) {
+                stopAlgorithmsTimer();
+                setStatus("Paused");
+              } else {
+                const hasPending =
+                  (algorithmsTab.greedyMachine?.t || 0) < (algorithmsTab.greedyMachine?.frames.length || 0) ||
+                  (algorithmsTab.backMachine?.t || 0) < (algorithmsTab.backMachine?.frames.length || 0);
+                if (hasPending) {
+                  startAlgorithmsTimer();
+                } else {
+                  document.getElementById("alg-build-run").click();
+                }
+              }
+              updateAlgorithmsButtons();
+            }
+          } else if (event.key === "ArrowRight" && tab === "tab-playground") {
+            event.preventDefault();
+            playground.machine?.step();
+          } else if (event.key === "ArrowLeft" && tab === "tab-playground") {
+            event.preventDefault();
+            playground.machine?.stepBack();
+          } else if (event.key.toLowerCase() === "r") {
+            event.preventDefault();
+            resetActiveTab();
+          }
+        });
+      }
+
+      function wireTopBar() {
+        document.getElementById("global-speed").addEventListener("input", (e) => {
+          const speed = Number(e.target.value);
+          const tx = 850 - speed * 80;
+          document.documentElement.style.setProperty("--tx-speed", `${Math.max(50, tx)}ms`);
+        });
+
+        document.getElementById("pattern-mode").addEventListener("change", (e) => {
+          applyPatternModeAll(e.target.checked);
+        });
+
+        document.getElementById("reset-all").addEventListener("click", () => {
+          resetActiveTab();
+        });
+      }
+
+      function wireLectureToggle() {
+        const header = document.getElementById("lectureToggleBtn");
+        const body = document.getElementById("lectureBody");
+        const toggle = document.getElementById("lectureToggleText");
+        if (!header || !body || !toggle) {
+          return;
+        }
+        const setCollapsed = (collapsed) => {
+          body.classList.toggle("collapsed", collapsed);
+          toggle.textContent = collapsed ? "Expand" : "Collapse";
+          toggle.setAttribute("aria-expanded", collapsed ? "false" : "true");
+        };
+        let collapsed = false;
+        header.addEventListener("click", () => {
+          collapsed = !collapsed;
+          setCollapsed(collapsed);
+        });
+        toggle.addEventListener("click", (event) => {
+          event.stopPropagation();
+          collapsed = !collapsed;
+          setCollapsed(collapsed);
+        });
+        setCollapsed(collapsed);
+      }
+
+      switchTabs();
+      wireLectureToggle();
+      wireTopBar();
+      wireKeyboardShortcuts();
+      initPlaygroundScaffold();
+      initAlgorithmsScaffold();
+      initDesignScaffold();
+      initNPScaffold();
+      setStatus("Idle");
+      setStepCounter(0, 0);
+    </script>
+  </body>
+</html>
